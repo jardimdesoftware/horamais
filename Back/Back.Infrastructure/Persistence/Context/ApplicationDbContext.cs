@@ -8,6 +8,7 @@ using Back.Domain.Entities.Certificado;
 using Back.Domain.Entities.Convite;
 using Back.Domain.Entities.Coordenador;
 using Back.Domain.Entities.Curso;
+using Back.Domain.Entities.LembreteEmail;
 using Back.Domain.Entities.LimiteHorasAluno;
 using Back.Domain.Entities.Turma;
 using Microsoft.AspNetCore.Identity;
@@ -35,6 +36,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<ConviteCoordenador> Convites { get; set; }
     public DbSet<AlunoAtividade> AlunoAtividades { get; set; }
     public DbSet<ResetPasswordCode> ResetPasswordCodes { get; set; }
+    public DbSet<LembreteEmail> LembretesEmail { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,6 +84,16 @@ modelBuilder.Entity<ResetPasswordCode>(cfg =>
             cfg.Property(x => x.Code).IsRequired().HasMaxLength(6);
             cfg.Property(x => x.IdentityResetToken).IsRequired();
         });
+
+        // LembreteEmail -> Curso
+        modelBuilder.Entity<LembreteEmail>()
+            .HasOne<Curso>()
+            .WithMany()
+            .HasForeignKey(l => l.CursoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LembreteEmail>()
+            .HasIndex(l => l.CursoId);
 
     }
 }
