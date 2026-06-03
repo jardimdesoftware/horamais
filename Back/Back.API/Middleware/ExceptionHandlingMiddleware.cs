@@ -58,6 +58,12 @@ public class ExceptionHandlingMiddleware
         ArgumentException ex
             => (StatusCodes.Status400BadRequest, ex.Message),
 
+        KeyNotFoundException ex
+            => (StatusCodes.Status404NotFound, ex.Message),
+
+        UnauthorizedAccessException ex
+            => (StatusCodes.Status403Forbidden, ex.Message),
+
         InvalidOperationException ex when IsConfigError(ex)
             => (StatusCodes.Status500InternalServerError, "Erro de configuração do servidor. Contate o administrador."),
 
