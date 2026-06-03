@@ -35,6 +35,15 @@ public class EmailTemplateService : IEmailTemplateService
             .Replace("{{ANO}}", DateTime.UtcNow.Year.ToString());
     }
 
+    public string RenderLembretePendencia(string nome, string mensagem)
+    {
+        var template = LoadTemplate("lembrete-pendencia.html");
+        return template
+            .Replace("{{NOME}}", WebUtility.HtmlEncode(nome))
+            .Replace("{{MENSAGEM}}", WebUtility.HtmlEncode(mensagem))
+            .Replace("{{ANO}}", DateTime.UtcNow.Year.ToString());
+    }
+
     private static string LoadTemplate(string fileName)
     {
         var resourceName = $"Back.Infrastructure.Templates.{fileName}";

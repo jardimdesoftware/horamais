@@ -72,6 +72,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Worker que dispara os lembretes de pendência nas datas agendadas
+builder.Services.AddHostedService<Back.API.Workers.LembreteEmailWorker>();
+
 var app = builder.Build();
 
 // Executa migra��o + seed admin
