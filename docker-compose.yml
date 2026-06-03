@@ -23,6 +23,7 @@ services:
       - JWT__Key=${JWT__Key}
       - JWT__Issuer=${JWT__Issuer}
       - JWT__Audience=${JWT__Audience}
+      - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - EMAIL__Remetente=${EMAIL__Remetente}
