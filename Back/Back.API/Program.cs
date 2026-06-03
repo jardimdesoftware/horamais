@@ -23,7 +23,8 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfig();
-builder.Services.AddCorsConfig();
+var corsAllowedOrigins = builder.Configuration["CORS_ALLOWED_ORIGIN"];
+builder.Services.AddCorsConfig(corsAllowedOrigins, builder.Environment.IsDevelopment());
 
 // Banco de Dados
 var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
@@ -112,7 +113,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseCors("AllowAll");
+app.UseCors(CorsConfig.PolicyName);
 app.UseSwagger();
 app.UseSwaggerUI();
 if (!app.Environment.IsDevelopment())
