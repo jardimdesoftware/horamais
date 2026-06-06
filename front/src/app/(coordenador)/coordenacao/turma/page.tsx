@@ -453,6 +453,14 @@ export default function CourseDetailPage() {
                   </li>
                   <li>• Você poderá gerenciar alunos e acompanhar progresso</li>
                 </ul>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsTurmaModalOpen(false)}
+                  className="mt-4 bg-purple-100 hover:bg-purple-200 text-purple-800 font-semibold"
+                >
+                  Ver turmas
+                </Button>
               </div>
             </div>
           </div>
