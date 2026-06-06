@@ -18,6 +18,12 @@ public class CreateTurmaUseCase
 
     public async Task<TurmaResponse> ExecuteAsync(CreateTurmaRequest request)
     {
+        var periodo = TurmaInputValidator.ValidarPeriodo(request.Periodo);
+        var turno = TurmaInputValidator.NormalizarTurno(request.Turno);
+
+        if (await _repo.ExistsByCursoPeriodoTurnoAsync(request.CursoId, periodo, turno))
+            throw new InvalidOperationException("Já existe uma turma para este curso, período e turno.");
+
         string codigo;
         bool exists;
         do
@@ -28,8 +34,8 @@ public class CreateTurmaUseCase
 
         var turma = new TurmaBuilder()
             .WithId(Guid.NewGuid())
-            .WithPeriodo(request.Periodo)
-            .WithTurno(request.Turno)
+            .WithPeriodo(periodo)
+            .WithTurno(turno)
             .WithCodigo(codigo)
             .WithPossuiExtensao(request.PossuiExtensao)
             .WithMaximoHorasExtensao(request.MaximoHorasExtensao)

@@ -17,14 +17,20 @@ public class UpdateTurmaUseCase
 
     public async Task<TurmaResponse> ExecuteAsync(string identifier, UpdateTurmaRequest request)
     {
+        var periodo = TurmaInputValidator.ValidarPeriodo(request.Periodo);
+        var turno = TurmaInputValidator.NormalizarTurno(request.Turno);
+
         // 1. Busca a turma (rastreada e com includes)
         var turma = await _repo.GetByIdentifierTrackedAsync(identifier);
         if (turma == null)
             throw new KeyNotFoundException("Turma não encontrada.");
 
+        if (await _repo.ExistsByCursoPeriodoTurnoAsync(request.CursoId, periodo, turno, turma.Id))
+            throw new InvalidOperationException("Já existe uma turma para este curso, período e turno.");
+
         // 2. Atualiza as propriedades
-        turma.Periodo = request.Periodo;
-        turma.Turno = request.Turno;
+        turma.Periodo = periodo;
+        turma.Turno = turno;
         turma.PossuiExtensao = request.PossuiExtensao;
         turma.MaximoHorasExtensao = request.MaximoHorasExtensao;
         turma.CursoId = request.CursoId;
