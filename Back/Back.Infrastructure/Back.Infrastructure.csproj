@@ -9,6 +9,7 @@
 		<EmbeddedResource Include="Templates\convite-coordenador.html" />
 		<EmbeddedResource Include="Templates\reset-senha.html" />
 		<EmbeddedResource Include="Templates\lembrete-pendencia.html" />
+		<EmbeddedResource Include="Templates\conclusao-carga-secretaria.html" />
 	</ItemGroup>
 
 	<ItemGroup>

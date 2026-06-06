@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Back.Application.Interfaces;
 using Back.Application.Interfaces.Repositories;
 using Back.Domain.Entities.Atividade;
 using Back.Domain.Entities.Certificado;
@@ -12,15 +13,18 @@ public class AtualizarStatusCertificadoUseCase
     private readonly ICertificadoRepository _repo;
     private readonly IAlunoAtividadeRepository _alunoAtividadeRepo;
     private readonly ILimiteHorasAlunoRepository _limiteRepo;
+    private readonly INotificarSecretariaConclusaoUseCase _notificarSecretaria;
 
     public AtualizarStatusCertificadoUseCase(
         ICertificadoRepository repo,
         IAlunoAtividadeRepository alunoAtividadeRepo,
-        ILimiteHorasAlunoRepository limiteRepo)
+        ILimiteHorasAlunoRepository limiteRepo,
+        INotificarSecretariaConclusaoUseCase notificarSecretaria)
     {
         _repo = repo;
         _alunoAtividadeRepo = alunoAtividadeRepo;
         _limiteRepo = limiteRepo;
+        _notificarSecretaria = notificarSecretaria;
     }
 
     public async Task<bool> ExecuteAsync(Guid id, StatusCertificado novoStatus, string? justificativaRejeicao = null, int? novaCargaHoraria = null)
@@ -109,6 +113,12 @@ public class AtualizarStatusCertificadoUseCase
             ? justificativaRejeicao
             : null;
         await _repo.UpdateAsync(certificado);
+
+        // Ao aprovar, verifica se o aluno atingiu a carga exigida do tipo e, em
+        // caso afirmativo, notifica a secretaria (uma única vez por aluno e tipo).
+        if (novoStatus == StatusCertificado.APROVADO)
+            await _notificarSecretaria.ExecuteAsync(alunoAtividade.AlunoId, atividade.Tipo);
+
         return true;
     }
 
