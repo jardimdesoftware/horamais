@@ -5,6 +5,7 @@ using Back.Application.UseCases.Campus;
 using Back.Application.UseCases.Certificado;
 using Back.Application.UseCases.Coordenador;
 using Back.Application.UseCases.Curso;
+using Back.Application.UseCases.LembreteEmail;
 using Back.Application.UseCases.LimiteHorasAluno;
 using Back.Application.UseCases.Turma;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,6 +80,13 @@ public static class DependencyInjection
         services.AddScoped<GetCertificadoAnexoUseCase>();
         services.AddScoped<UpdateCertificadoUseCase>();
         services.AddScoped<DeleteCertificadoUseCase>();
+        //lembrete de e-mail
+        services.AddScoped<ResolverCursoCoordenadorUseCase>();
+        services.AddScoped<CriarLembreteEmailUseCase>();
+        services.AddScoped<ListarLembretesEmailUseCase>();
+        services.AddScoped<AtualizarLembreteEmailUseCase>();
+        services.AddScoped<RemoverLembreteEmailUseCase>();
+        services.AddScoped<EnviarLembretesPendentesUseCase>();
         //Limitehoras
         services.AddScoped<CreateLimiteHorasAlunoUseCase>();
         //atividade
