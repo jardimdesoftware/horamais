@@ -16,6 +16,7 @@ public interface ITurmaRepository
     Task<Turma?> GetByIdentifierTrackedAsync(string identifier);
     Task<bool> ExistsAsync(Guid id);
     Task<bool> ExistsByCodigoAsync(string codigo);
+    Task<bool> ExistsByCursoPeriodoTurnoAsync(Guid cursoId, string periodo, string turno, Guid? ignorarId = null);
     Task<IEnumerable<Aluno>> GetAlunosByTurmaAsync(Guid turmaId);
     Task<IEnumerable<Turma>> GetByCursoIdAsync(Guid cursoId);
     Task<IEnumerable<Turma>> GetByCursoIdTrackedAsync(Guid cursoId);

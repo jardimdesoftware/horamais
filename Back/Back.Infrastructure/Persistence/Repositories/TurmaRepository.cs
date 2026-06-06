@@ -53,6 +53,15 @@ public class TurmaRepository : ITurmaRepository
         return await _context.Turmas.AnyAsync(t => t.Codigo == codigo);
     }
 
+    public async Task<bool> ExistsByCursoPeriodoTurnoAsync(Guid cursoId, string periodo, string turno, Guid? ignorarId = null)
+    {
+        return await _context.Turmas.AnyAsync(t =>
+            t.CursoId == cursoId &&
+            t.Periodo == periodo &&
+            t.Turno == turno &&
+            (ignorarId == null || t.Id != ignorarId));
+    }
+
     public async Task<Turma?> GetByCodigoAsync(string codigo)
     {
         return await _context.Turmas
