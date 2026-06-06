@@ -44,6 +44,18 @@ public class EmailTemplateService : IEmailTemplateService
             .Replace("{{ANO}}", DateTime.UtcNow.Year.ToString());
     }
 
+    public string RenderConclusaoCargaSecretaria(string nome, string matricula, string tipo, int horasConcluidas, int horasExigidas)
+    {
+        var template = LoadTemplate("conclusao-carga-secretaria.html");
+        return template
+            .Replace("{{NOME}}", WebUtility.HtmlEncode(nome))
+            .Replace("{{MATRICULA}}", WebUtility.HtmlEncode(matricula))
+            .Replace("{{TIPO}}", WebUtility.HtmlEncode(tipo))
+            .Replace("{{HORAS}}", horasConcluidas.ToString())
+            .Replace("{{EXIGIDO}}", horasExigidas.ToString())
+            .Replace("{{ANO}}", DateTime.UtcNow.Year.ToString());
+    }
+
     private static string LoadTemplate(string fileName)
     {
         var resourceName = $"Back.Infrastructure.Templates.{fileName}";

@@ -1,4 +1,5 @@
 using Back.Application.UseCases.Certificado;
+using Back.Application.Interfaces;
 using Back.Application.Interfaces.Repositories;
 using Back.Domain.Entities.Certificado;
 using Back.Domain.Entities.Atividade;
@@ -15,9 +16,10 @@ public class AtualizarStatusCertificadoUseCaseTests
     private readonly Mock<ICertificadoRepository> _certRepo = new();
     private readonly Mock<IAlunoAtividadeRepository> _alunoAtvRepo = new();
     private readonly Mock<ILimiteHorasAlunoRepository> _limiteRepo = new();
+    private readonly Mock<INotificarSecretariaConclusaoUseCase> _notificarSecretaria = new();
 
     private AtualizarStatusCertificadoUseCase CreateUseCase()
-        => new(_certRepo.Object, _alunoAtvRepo.Object, _limiteRepo.Object);
+        => new(_certRepo.Object, _alunoAtvRepo.Object, _limiteRepo.Object, _notificarSecretaria.Object);
 
     private static void SetPrivateProp<T, P>(T obj, string prop, P value)
     {

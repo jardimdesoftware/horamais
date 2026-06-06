@@ -30,6 +30,7 @@ services:
       - EMAIL__Senha=${EMAIL__Senha}
       - EMAIL__Smtp=${EMAIL__Smtp}
       - EMAIL__Porta=${EMAIL__Porta}
+      - SECRETARIA_EMAIL=${SECRETARIA_EMAIL}
       - COORDENADOR_CONVITE_LINK=${COORDENADOR_CONVITE_LINK}
       - FileStorage__Endpoint=http://minio:9000
       - FileStorage__AccessKey=${MINIO_ROOT_USER}

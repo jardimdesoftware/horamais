@@ -1,4 +1,5 @@
-﻿using Back.Application.UseCases.Aluno;
+﻿using Back.Application.Interfaces;
+using Back.Application.UseCases.Aluno;
 using Back.Application.UseCases.Atividade;
 using Back.Application.UseCases.Auth;
 using Back.Application.UseCases.Campus;
@@ -75,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<GetCertificadosUseCase>();
         services.AddScoped<GetCertificadosDoAlunoAutenticadoUseCase>();
         services.AddScoped<AtualizarStatusCertificadoUseCase>();
+        services.AddScoped<INotificarSecretariaConclusaoUseCase, NotificarSecretariaConclusaoUseCase>();
         services.AddScoped<GetCertificadoByIdUseCase>();
         services.AddScoped<GetCertificadosByCursoIdUseCase>();
         services.AddScoped<GetCertificadoAnexoUseCase>();
