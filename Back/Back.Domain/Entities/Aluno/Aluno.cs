@@ -20,6 +20,11 @@ public class Aluno
     public bool JaBaixadoHorasComplementares { get; set; }
     public bool? JaBaixadoHorasExtensao { get; set; }
 
+    // Garante que a secretaria seja notificada uma única vez por aluno e por tipo
+    // de carga (extensão e complementar são tratados separadamente — PPC novo).
+    public bool NotificadoSecretariaComplementar { get; set; }
+    public bool NotificadoSecretariaExtensao { get; set; }
+
     [Required(ErrorMessage = "O campo TurmaId é obrigatório.")]
     public Guid TurmaId { get; set; }
 
