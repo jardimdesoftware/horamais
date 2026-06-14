@@ -137,6 +137,10 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine(" Rodando seed de admin...");
     await AdminSeeder.SeedAsync(context, userManager);
 
+    // Semeia os campi do IFPE antes do coordenador (que se vincula a Belo Jardim)
+    Console.WriteLine(" Rodando seed de campi...");
+    await CampusSeeder.SeedAsync(context);
+
     // Executa seed de coordenador
     Console.WriteLine(" Rodando seed de coordenador...");
     await CoordenadorSeeder.SeedAsync(context, userManager);
