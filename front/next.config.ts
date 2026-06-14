@@ -1,4 +1,13 @@
 const nextConfig = {
+  // Logging verboso do servidor de dev: registra TODAS as requisições recebidas
+  // e todas as chamadas fetch (com URL completa), inclusive as feitas à API.
+  logging: {
+    fetches: {
+      fullUrl: true,
+      hmrRefreshes: true
+    },
+    incomingRequests: true
+  },
   async headers() {
     return [
       {
