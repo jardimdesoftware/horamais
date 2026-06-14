@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Events;
 using System.Text;
 using System.Threading;
 
@@ -18,6 +20,28 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add appsettings.json + .env como IConfiguration
 builder.Configuration.AddEnvironmentVariables();
+
+// Logging (Serilog): registra ABSOLUTAMENTE TUDO — nível Verbose, todas as
+// requisições HTTP e todas as queries do EF Core — no console e em arquivo
+// diário rotacionado em /app/logs (montado no host via docker-compose.dev.yml).
+builder.Host.UseSerilog((context, services, loggerConfig) =>
+{
+    loggerConfig
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .MinimumLevel.Verbose()
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File(
+            path: Path.Combine(AppContext.BaseDirectory, "logs", "horas-discentes-.log"),
+            rollingInterval: RollingInterval.Day,
+            rollOnFileSizeLimit: true,
+            fileSizeLimitBytes: 50_000_000,
+            retainedFileCountLimit: 31,
+            shared: true,
+            flushToDiskInterval: TimeSpan.FromSeconds(1),
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}{NewLine}    {Message:lj}{NewLine}{Exception}");
+});
 
 // Add services
 builder.Services.AddControllers();
@@ -32,7 +56,17 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new Exception("Connection string n�o definida. Verifique o .env");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+{
+    options.UseNpgsql(connectionString);
+
+    // Em desenvolvimento registra os valores dos parâmetros e erros detalhados
+    // das queries, para que o log capture absolutamente tudo do acesso a dados.
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
 
 // Identity
 builder.Services
@@ -115,6 +149,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Registra todas as requisições HTTP (método, rota, status, duração)
+app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseCors(CorsConfig.PolicyName);
 app.UseSwagger();
@@ -150,3 +186,7 @@ async Task SeedDatabaseAsync(WebApplication app)
     await AdminSeeder.SeedAsync(context, userManager);
     Console.WriteLine(" Seed executado com sucesso.");
 }
+
+// Expõe a classe Program (gerada pelas top-level statements) para os
+// testes de integração que usam WebApplicationFactory<Program>.
+public partial class Program { }

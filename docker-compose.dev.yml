@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./Back
+      context: ./back
       dockerfile: Dockerfile
     container_name: horas-discentes-backend-dev
     ports:
@@ -33,6 +33,8 @@ services:
       - FileStorage__UseSSL=false
     volumes:
       - backend_data_protection_keys_dev:/root/.aspnet/DataProtection-Keys
+      # Persiste os logs do backend no host para inspeção
+      - ./logs/backend:/app/logs
     networks:
       - rede-back-dev
     depends_on:
