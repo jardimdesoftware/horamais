@@ -2,7 +2,7 @@ version: 2
 updates:
   # Back.API
   - package-ecosystem: "nuget"
-    directory: "/Back.API"
+    directory: "/back/Back.API"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -19,7 +19,7 @@ updates:
 
   # Back.Application
   - package-ecosystem: "nuget"
-    directory: "/Back.Application"
+    directory: "/back/Back.Application"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -36,7 +36,7 @@ updates:
 
   # Back.Domain
   - package-ecosystem: "nuget"
-    directory: "/Back.Domain"
+    directory: "/back/Back.Domain"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
