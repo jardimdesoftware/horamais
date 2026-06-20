@@ -1,6 +1,7 @@
 ﻿using Back.Application.DTOs.Aluno;
 using Back.Application.Interfaces.Identity;
 using Back.Application.Interfaces.Repositories;
+using Back.Application.Interfaces.Services;
 using Back.Domain.Entities.Aluno;
 using Back.Domain.Entities.AlunoAtividade;
 using System;
@@ -17,19 +18,22 @@ public class CreateAlunoUseCase
     private readonly IAtividadeRepository _atividadeRepo;
     private readonly IAlunoAtividadeRepository _alunoAtividadeRepo;
     private readonly IIdentityService _identityService;
+    private readonly ITurmaRealtimeNotifier _realtime;
 
     public CreateAlunoUseCase(
         IAlunoRepository alunoRepo,
         ITurmaRepository turmaRepo,
         IAtividadeRepository atividadeRepo,
         IAlunoAtividadeRepository alunoAtividadeRepo,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        ITurmaRealtimeNotifier realtime)
     {
         _alunoRepo = alunoRepo;
         _turmaRepo = turmaRepo;
         _atividadeRepo = atividadeRepo;
         _alunoAtividadeRepo = alunoAtividadeRepo;
         _identityService = identityService;
+        _realtime = realtime;
     }
 
     public async Task<CreateAlunoResponse> ExecuteAsync(CreateAlunoRequest request)
@@ -86,6 +90,10 @@ public class CreateAlunoUseCase
         ).ToList();
 
         await _alunoAtividadeRepo.AddRangeAsync(alunoAtividades);
+
+        // Avisa os coordenadores com esta turma aberta para que a lista atualize
+        // em tempo real, sem recarregar a página.
+        await _realtime.NotificarAlunosAlteradosAsync(turma.Id);
 
         return new CreateAlunoResponse(aluno.Id, aluno.Nome!, aluno.Email!);
     }

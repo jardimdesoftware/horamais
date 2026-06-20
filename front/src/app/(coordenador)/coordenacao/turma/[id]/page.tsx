@@ -23,6 +23,7 @@ import {
   useTurma,
   turmaAlunosKey
 } from '@/hooks/useTurmaAlunos';
+import { useTurmaRealtime } from '@/hooks/useTurmaRealtime';
 import { extractApiError } from '@/lib/apiError';
 import {
   obterCoordenadorAutenticado,
@@ -64,6 +65,11 @@ const VisualizarTurma = () => {
     queryKey: ['coordenador-autenticado'],
     queryFn: obterCoordenadorAutenticado
   });
+
+  // Tempo real: novos alunos da turma aparecem ao vivo, sem recarregar a página.
+  // O grupo SignalR usa o GUID da turma (turma.id) para casar com o backend; a
+  // invalidação usa o identificador da URL (turmaId), igual à queryKey da lista.
+  useTurmaRealtime(turma?.id, turmaId);
 
   useEffect(() => {
     if (isErrorAlunos) toast.error('Erro ao carregar dados da turma.');
