@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
+import { useCriarAluno } from '@/hooks/useCriarAluno';
 import { extractApiError } from '@/lib/apiError';
 import { verificarTurmaExiste } from '@/services/classService';
-import { criarAluno } from '@/services/studentService';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { firstAccessSchema, FirstAccessSchema } from '../schemas/schema';
@@ -19,6 +19,9 @@ export const useFirstAccess = () => {
     null
   );
   const [loading, setLoading] = useState(false);
+
+  const { mutateAsync: criarAlunoAsync, isPending: isCriandoAluno } =
+    useCriarAluno();
 
   const form = useForm<FirstAccessSchema>({
     resolver: zodResolver(firstAccessSchema),
@@ -55,17 +58,14 @@ export const useFirstAccess = () => {
   const handleFinalizarCadastro = async (data: FirstAccessSchema) => {
     if (!turma) return;
 
-    setLoading(true);
     try {
-      await criarAluno({ ...data, turmaCodigo: turma.codigo });
+      await criarAlunoAsync({ ...data, turmaCodigo: turma.codigo });
       toast.success(
         'Cadastro realizado com sucesso! Você pode acessar o sistema agora.'
       );
       router.push('/');
     } catch (err) {
       toast.error(extractApiError(err, 'Erro ao cadastrar. Tente novamente.'));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -76,7 +76,7 @@ export const useFirstAccess = () => {
     setCodigo,
     turma,
     form,
-    loading,
+    loading: loading || isCriandoAluno,
     handleValidarCodigo,
     handleFinalizarCadastro
   };
