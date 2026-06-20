@@ -145,6 +145,10 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine(" Rodando seed de coordenador...");
     await CoordenadorSeeder.SeedAsync(context, userManager);
 
+    // Atividades de referência do IFPE (complementares/extensão) em todos os ambientes
+    Console.WriteLine(" Rodando seed de atividades...");
+    await AtividadeSeeder.SeedAsync(context);
+
     // Seed de dados de desenvolvimento
     if (app.Environment.IsDevelopment())
     {

@@ -24,9 +24,6 @@ public static class DevDataSeeder
         if (await context.Cursos.AnyAsync())
             return;
 
-        // Atividades globais (antes de cursos/alunos para poder vincular)
-        await AtividadeSeeder.SeedAsync(context);
-
         // Campi do IFPE (semeados pelo CampusSeeder); usa Belo Jardim para o curso.
         var campusPadrao = await CampusSeeder.ObterPadraoAsync(context);
         var campusId = campusPadrao.Id;
