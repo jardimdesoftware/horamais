@@ -37,6 +37,7 @@ public class CreateCertificadoRequest
     [Required]
     public int TotalPeriodos { get; set; }
 
+    [StringLength(500, ErrorMessage = "A especificação da atividade deve ter no máximo 500 caracteres.")]
     public string? Descricao { get; set; }
 
     [Required]

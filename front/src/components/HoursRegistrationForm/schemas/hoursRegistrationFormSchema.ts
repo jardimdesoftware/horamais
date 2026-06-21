@@ -3,6 +3,9 @@ import { z } from 'zod';
 // Mensagem de erro padrão para campos obrigatórios
 const requiredError = (fieldName: string) => `${fieldName} é obrigatório(a).`;
 
+// Limite de caracteres para a especificação da atividade
+export const ESPECIFICACAO_MAX_LENGTH = 500;
+
 // Schema para o arquivo (comprovante)
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -25,7 +28,11 @@ export const hoursRegistrationFormSchema = z
       .min(3, 'O local deve ter pelo menos 3 caracteres.'),
     especificacaoAtividade: z
       .string(requiredError('Especificação das Atividades'))
-      .min(10, 'A descrição deve ter pelo menos 10 caracteres.'),
+      .min(10, 'A descrição deve ter pelo menos 10 caracteres.')
+      .max(
+        ESPECIFICACAO_MAX_LENGTH,
+        `A descrição deve ter no máximo ${ESPECIFICACAO_MAX_LENGTH} caracteres.`
+      ),
     categoria: z
       .string(requiredError('Categoria'))
       .min(1, 'Selecione uma categoria.'),

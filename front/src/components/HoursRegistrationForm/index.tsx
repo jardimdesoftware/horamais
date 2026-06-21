@@ -17,6 +17,7 @@ import SelectBox from '@components/ui/SelectBox';
 import { AtividadeResponse } from '@/services/activityService';
 
 import { useHoursRegistrationForm } from './hooks/useHoursRegistrationForm';
+import { ESPECIFICACAO_MAX_LENGTH } from './schemas/hoursRegistrationFormSchema';
 
 interface HoursRegistrationFormProps {
   categoriasComplementares: AtividadeResponse[];
@@ -49,6 +50,9 @@ export default function HoursRegistrationForm({
 
   const { register } = formMethods;
   const [termosExpandidos, setTermosExpandidos] = React.useState(false);
+
+  const especificacaoLength =
+    formMethods.watch('especificacaoAtividade')?.length ?? 0;
 
   const categoriasAtuais =
     tipoRegistro === 'horas-extensao'
@@ -314,15 +318,23 @@ export default function HoursRegistrationForm({
             <textarea
               id="especificacaoAtividade"
               {...register('especificacaoAtividade')}
+              maxLength={ESPECIFICACAO_MAX_LENGTH}
               className={`${inputClass} h-24`}
               rows={3}
               placeholder="Descreva brevemente a atividade realizada, local e período."
             />
-            {errors.especificacaoAtividade && (
-              <p className={errorClass}>
-                {errors.especificacaoAtividade.message}
-              </p>
-            )}
+            <div className="flex justify-between items-start gap-2 mt-1">
+              <div className="flex-1">
+                {errors.especificacaoAtividade && (
+                  <p className={errorClass}>
+                    {errors.especificacaoAtividade.message}
+                  </p>
+                )}
+              </div>
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                {especificacaoLength}/{ESPECIFICACAO_MAX_LENGTH}
+              </span>
+            </div>
           </div>
 
           <div className="col-span-1 md:col-span-3">
