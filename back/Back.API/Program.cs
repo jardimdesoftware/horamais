@@ -107,6 +107,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Tempo real: hub da turma + notifier que empurra eventos para o grupo da turma.
+builder.Services.AddSignalR();
+builder.Services.AddScoped<Back.Application.Interfaces.Services.ITurmaRealtimeNotifier,
+    Back.API.Hubs.TurmaRealtimeNotifier>();
+
 // Worker que dispara os lembretes de pendência nas datas agendadas
 builder.Services.AddHostedService<Back.API.Workers.LembreteEmailWorker>();
 
@@ -168,6 +173,7 @@ if (!app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<Back.API.Hubs.TurmaHub>("/hubs/turma");
 
 // Rodar manualmente s� o seed com --seed
 if (args.Contains("--seed"))

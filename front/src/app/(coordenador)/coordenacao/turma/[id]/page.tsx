@@ -18,14 +18,13 @@ import {
   CardTitle
 } from '@/components/ui/card';
 
-import { useLoadingOverlay } from '@/hooks/useLoadingOverlay';
-import { extractApiError } from '@/lib/apiError';
 import {
-  listarAlunosPorTurma,
-  obterTurmaPorId,
-  TurmaResponse,
-  AlunoPorTurmaDetalhadoResponse
-} from '@/services/classService';
+  useAlunosPorTurma,
+  useTurma,
+  turmaAlunosKey
+} from '@/hooks/useTurmaAlunos';
+import { useTurmaRealtime } from '@/hooks/useTurmaRealtime';
+import { extractApiError } from '@/lib/apiError';
 import {
   obterCoordenadorAutenticado,
   type CoordenadorInfoResponse
@@ -37,6 +36,7 @@ import {
   marcarDownloadComplementar,
   marcarDownloadExtensao
 } from '@/services/studentService';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import PizZip from 'pizzip';
@@ -49,38 +49,38 @@ const turnoLabel: Record<string, string> = {
 
 const VisualizarTurma = () => {
   const { id } = useParams();
-  const [turma, setTurma] = useState<TurmaResponse | null>(null);
-  const [students, setStudents] = useState<AlunoPorTurmaDetalhadoResponse[]>(
-    []
-  );
-  const [coordenador, setCoordenador] =
-    useState<CoordenadorInfoResponse | null>(null);
+  const turmaId = id as string;
+  const queryClient = useQueryClient();
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { visible, show, hide } = useLoadingOverlay();
+
+  const { data: turma, isLoading: isLoadingTurma } = useTurma(turmaId);
+  const {
+    data: students = [],
+    isLoading: isLoadingAlunos,
+    isError: isErrorAlunos
+  } = useAlunosPorTurma(turmaId);
+  const { data: coordenador = null } = useQuery<CoordenadorInfoResponse>({
+    queryKey: ['coordenador-autenticado'],
+    queryFn: obterCoordenadorAutenticado
+  });
+
+  // Tempo real: novos alunos da turma aparecem ao vivo, sem recarregar a página.
+  // O grupo SignalR usa o GUID da turma (turma.id) para casar com o backend; a
+  // invalidação usa o identificador da URL (turmaId), igual à queryKey da lista.
+  useTurmaRealtime(turma?.id, turmaId);
 
   useEffect(() => {
-    if (!id) return;
-    const carregarDados = async () => {
-      try {
-        show();
-        const [turmaResponse, alunosResponse, coordResponse] =
-          await Promise.all([
-            obterTurmaPorId(id as string),
-            listarAlunosPorTurma(id as string),
-            obterCoordenadorAutenticado()
-          ]);
-        setTurma(turmaResponse);
-        setStudents(alunosResponse);
-        setCoordenador(coordResponse);
-      } catch (error) {
-        toast.error('Erro ao carregar dados da turma.');
-      } finally {
-        hide();
-      }
-    };
-    carregarDados();
-  }, [id, show, hide]);
+    if (isErrorAlunos) toast.error('Erro ao carregar dados da turma.');
+  }, [isErrorAlunos]);
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: toggleStatusAluno,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: turmaAlunosKey(turmaId) });
+    }
+  });
 
   const copyCode = async () => {
     if (!turma) return;
@@ -93,17 +93,12 @@ const VisualizarTurma = () => {
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
     try {
-      show();
-      await toggleStatusAluno(studentId);
-      const atualizados = await listarAlunosPorTurma(id as string);
-      setStudents(atualizados);
+      await toggleStatusMutation.mutateAsync(studentId);
       toast.info(
         `${student.nome} foi ${student.isAtivo ? 'desativado' : 'ativado'}.`
       );
     } catch (error) {
       toast.error(extractApiError(error, 'Não foi possível alterar o status.'));
-    } finally {
-      hide();
     }
   };
 
@@ -202,7 +197,14 @@ const VisualizarTurma = () => {
 
   return (
     <div className="space-y-8 p-4 md:p-6">
-      <LoadingOverlay show={visible || isDownloading} />
+      <LoadingOverlay
+        show={
+          isLoadingTurma ||
+          isLoadingAlunos ||
+          toggleStatusMutation.isPending ||
+          isDownloading
+        }
+      />
 
       <BreadcrumbAuto />
 

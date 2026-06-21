@@ -1,6 +1,7 @@
 ﻿using Back.Application.DTOs.Aluno;
 using Back.Application.Interfaces.Identity;
 using Back.Application.Interfaces.Repositories;
+using Back.Application.Interfaces.Services;
 using Back.Application.UseCases.Aluno;
 using Back.Domain.Entities.Turma;
 using FluentAssertions;
@@ -17,6 +18,7 @@ public class CreateAlunoUseCaseTests
     private readonly Mock<IAtividadeRepository> _atividadeRepo = new();
     private readonly Mock<IAlunoAtividadeRepository> _alunoAtividadeRepo = new();
     private readonly Mock<IIdentityService> _identityService = new();
+    private readonly Mock<ITurmaRealtimeNotifier> _realtime = new();
 
     private CreateAlunoUseCase CreateUseCase()
         => new CreateAlunoUseCase(
@@ -24,7 +26,8 @@ public class CreateAlunoUseCaseTests
             _turmaRepo.Object,
             _atividadeRepo.Object,
             _alunoAtividadeRepo.Object,
-            _identityService.Object
+            _identityService.Object,
+            _realtime.Object
         );
 
     [Fact]
