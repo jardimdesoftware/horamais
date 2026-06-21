@@ -42,13 +42,20 @@ public class AtualizarStatusCertificadoUseCase
 
         if (novoStatus == StatusCertificado.APROVADO
             && certificado.Status != StatusCertificado.APROVADO
-            && novaCargaHoraria.HasValue
-            && novaCargaHoraria.Value > 0
-            && novaCargaHoraria.Value != certificado.CargaHoraria)
+            && novaCargaHoraria.HasValue)
         {
-            certificado.CargaHorariaOriginal = certificado.CargaHoraria;
-            certificado.CargaHoraria = novaCargaHoraria.Value;
-            certificado.CargaHorariaCorrigida = true;
+            // A correção só pode reduzir (ou manter) a carga: o coordenador não
+            // pode informar um valor acima do que o aluno enviou.
+            if (novaCargaHoraria.Value < 1 || novaCargaHoraria.Value > certificado.CargaHoraria)
+                throw new ArgumentException(
+                    $"A carga horária corrigida deve estar entre 1 e {certificado.CargaHoraria} (carga informada pelo aluno).");
+
+            if (novaCargaHoraria.Value != certificado.CargaHoraria)
+            {
+                certificado.CargaHorariaOriginal = certificado.CargaHoraria;
+                certificado.CargaHoraria = novaCargaHoraria.Value;
+                certificado.CargaHorariaCorrigida = true;
+            }
         }
 
         if (novoStatus == StatusCertificado.APROVADO && certificado.Status != StatusCertificado.APROVADO)

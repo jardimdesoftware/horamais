@@ -175,17 +175,25 @@ namespace Back.API.Controllers
         [Authorize(Roles = "COORDENADOR")]
         [SwaggerOperation(Summary = "Aprova um certificado enviado pelo aluno.", Tags = new[] { "Certificados" })]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Aprovar(
             Guid id,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)]
             AprovarCertificadoRequest? request = null)
         {
-            var ok = await _atualizar.ExecuteAsync(id, StatusCertificado.APROVADO, novaCargaHoraria: request?.NovaCargaHoraria);
-            if (!ok)
-                return NotFound(new { erro = "Certificado não encontrado." });
+            try
+            {
+                var ok = await _atualizar.ExecuteAsync(id, StatusCertificado.APROVADO, novaCargaHoraria: request?.NovaCargaHoraria);
+                if (!ok)
+                    return NotFound(new { erro = "Certificado não encontrado." });
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { erro = ex.Message });
+            }
         }
 
         [HttpPatch("{id}/reprovar")]
