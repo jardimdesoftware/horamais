@@ -1,6 +1,7 @@
 using Back.Domain.Entities.Campus;
 using Back.Domain.Entities.Coordenador;
 using Back.Domain.Entities.Curso;
+using Back.Domain.Entities.LimiteHorasAluno;
 using Back.Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,9 @@ namespace Back.Infrastructure.Seeders;
 
 public class CoordenadorSeeder
 {
+    // Padrão usado quando CURSO_MAX_HORAS_COMPLEMENTAR não está definido.
+    private const int MaximoHorasComplementarPadrao = 120;
+
     public static async Task SeedAsync(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         var email = Environment.GetEnvironmentVariable("COORD_EMAIL");
@@ -24,13 +28,10 @@ public class CoordenadorSeeder
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(senha))
             return; // Se não houver configuração, não cria (opcional, diferente do admin que é obrigatório)
 
-        var existingUser = await userManager.FindByEmailAsync(email);
-        if (existingUser != null) return;
-
         // Vincula ao campus padrão (Belo Jardim), garantido pelo CampusSeeder.
         var campus = await CampusSeeder.ObterPadraoAsync(context);
 
-        // Garante que exista um curso para vincular
+        // Garante que exista um curso para vincular.
         var curso = await context.Cursos.FirstOrDefaultAsync(c => c.Nome == cursoNome);
         if (curso == null)
         {
@@ -42,6 +43,25 @@ public class CoordenadorSeeder
             context.Cursos.Add(curso);
             await context.SaveChangesAsync();
         }
+
+        // Garante o limite de horas complementares do curso (idempotente). Sem ele,
+        // o cálculo de conclusão/risco do aluno não funciona, pois esse máximo é a
+        // base do percentual. Roda a cada startup, corrigindo cursos antigos.
+        var temLimite = await context.LimitesHoras.AnyAsync(l => l.CursoId == curso.Id);
+        if (!temLimite)
+        {
+            var limite = new LimiteHorasAlunoBuilder()
+                .WithId(Guid.NewGuid())
+                .WithCursoId(curso.Id)
+                .WithMaximoHorasComplementar(ResolverMaximoHorasComplementar())
+                .Build();
+            context.LimitesHoras.Add(limite);
+            await context.SaveChangesAsync();
+        }
+
+        // Cria o coordenador apenas se ainda não existir.
+        var existingUser = await userManager.FindByEmailAsync(email);
+        if (existingUser != null) return;
 
         var identityUser = new IdentityUser
         {
@@ -68,5 +88,13 @@ public class CoordenadorSeeder
 
         context.Coordenadores.Add(coordenador);
         await context.SaveChangesAsync();
+    }
+
+    private static int ResolverMaximoHorasComplementar()
+    {
+        var raw = Environment.GetEnvironmentVariable("CURSO_MAX_HORAS_COMPLEMENTAR");
+        return int.TryParse(raw, out var valor) && valor > 0
+            ? valor
+            : MaximoHorasComplementarPadrao;
     }
 }
