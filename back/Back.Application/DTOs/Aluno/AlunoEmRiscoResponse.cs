@@ -13,5 +13,6 @@ public record AlunoEmRiscoResponse(
     int MaximoHorasComplementar,
     double PorcentagemConclusao,
     int PeriodosDecorridos,
-    double HorasPorPeriodo
+    double HorasPorPeriodo,
+    int DuracaoEmPeriodos
 );

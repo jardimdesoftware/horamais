@@ -33,6 +33,7 @@ public class CreateCursoUseCase
             .WithId(Guid.NewGuid())
             .WithNome(request.NomeCurso!)
             .WithCampusId(request.CampusId)
+            .WithDuracaoEmPeriodos(request.DuracaoEmPeriodos > 0 ? request.DuracaoEmPeriodos : 8)
             .Build();
 
         await _cursoRepository.AddAsync(curso);

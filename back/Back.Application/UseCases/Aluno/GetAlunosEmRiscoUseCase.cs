@@ -54,7 +54,8 @@ public class GetAlunosEmRiscoUseCase
                 x.Maximo,
                 x.Porcentagem,
                 x.Periodos!.Value,
-                Math.Round((double)x.TotalComplementar / x.Periodos!.Value, 2)
+                Math.Round((double)x.TotalComplementar / x.Periodos!.Value, 2),
+                x.Aluno.Turma!.Curso?.DuracaoEmPeriodos ?? 8
             ))
             .OrderBy(a => a.HorasPorPeriodo);
     }

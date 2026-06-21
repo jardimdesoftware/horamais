@@ -6,6 +6,7 @@ public record CursoDetalhadoResponse(
     Guid Id,
     string Nome,
     int MaximoHorasComplementar,
+    int DuracaoEmPeriodos,
     Guid CampusId,
     string NomeCampus
 );

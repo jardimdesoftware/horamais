@@ -22,5 +22,11 @@ public class CursoBuilder
         return this;
     }
 
+    public CursoBuilder WithDuracaoEmPeriodos(int duracaoEmPeriodos)
+    {
+        _curso.DuracaoEmPeriodos = duracaoEmPeriodos;
+        return this;
+    }
+
     public Curso Build() => _curso;
 }

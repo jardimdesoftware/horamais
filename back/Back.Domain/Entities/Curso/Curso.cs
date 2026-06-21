@@ -10,6 +10,12 @@ public class Curso
     [Required(ErrorMessage = "O campo Nome do curso é obrigatório.")]
     public string? Nome { get; set; }
 
+    /// <summary>
+    /// Duração regular do curso em períodos letivos (semestres). Base para o
+    /// cálculo do ritmo esperado de horas complementares (máximo ÷ duração).
+    /// </summary>
+    public int DuracaoEmPeriodos { get; set; } = 8;
+
     public Guid CampusId { get; set; }
     public Campus.Campus? Campus { get; set; }
 

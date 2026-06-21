@@ -35,6 +35,7 @@ public class UpdateCursoUseCase
 
         curso.Nome = request.NomeCurso;
         curso.CampusId = request.CampusId;
+        curso.DuracaoEmPeriodos = request.DuracaoEmPeriodos;
         await _cursoRepository.UpdateAsync(curso);
 
         var limite = await _limiteHorasRepository.GetByCursoIdToUpdateAsync(id);

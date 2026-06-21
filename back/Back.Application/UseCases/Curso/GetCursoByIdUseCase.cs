@@ -29,6 +29,7 @@ public class GetCursoByIdUseCase
             curso.Id,
             curso.Nome,
             limite?.MaximoHorasComplementar ?? 0,
+            curso.DuracaoEmPeriodos,
             curso.CampusId,
             curso.Campus?.Nome ?? string.Empty
         );
