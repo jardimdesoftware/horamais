@@ -10,7 +10,7 @@ import {
   listarAtividades,
   AtividadeResponse
 } from '@/services/activityService';
-import { listarPeriodosLetivos } from '@/services/turmaService';
+import { listarPeriodosLetivosValidos } from '@/services/certificateService';
 
 export default function NovoCertificado() {
   const [complementares, setComplementares] = useState<AtividadeResponse[]>([]);
@@ -24,7 +24,7 @@ export default function NovoCertificado() {
       try {
         const [atividadesResult, periodosResult] = await Promise.allSettled([
           listarAtividades(),
-          listarPeriodosLetivos()
+          listarPeriodosLetivosValidos()
         ]);
 
         if (atividadesResult.status === 'fulfilled') {
