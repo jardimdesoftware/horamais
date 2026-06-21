@@ -154,6 +154,9 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+            --build-arg VERSION="$CREATED_TAG" \
+            --build-arg REVISION="${{ github.sha }}" \
+            --build-arg BUILDTIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             -t ghcr.io/${{ github.repository_owner }}/horas-discentes-frontend:$CREATED_TAG \
             -f Dockerfile .
 
