@@ -45,6 +45,7 @@ export const EditCourseModal = ({
 }: EditCourseModalProps) => {
   const [nomeCurso, setNomeCurso] = useState('');
   const [complementaryHours, setComplementaryHours] = useState('');
+  const [durationPeriods, setDurationPeriods] = useState('8');
   const [selectedCampusId, setSelectedCampusId] = useState('');
   const [campuses, setCampuses] = useState<CampusResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,7 @@ export const EditCourseModal = ({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNomeCurso(curso.nome);
     setComplementaryHours(String(curso.maximoHorasComplementar));
+    setDurationPeriods(String(curso.duracaoEmPeriodos));
     setSelectedCampusId(curso.campusId);
     listarCampuses()
       .then(setCampuses)
@@ -74,6 +76,11 @@ export const EditCourseModal = ({
       return;
     }
 
+    if (Number(durationPeriods) <= 0) {
+      toast.error('A duração em períodos deve ser maior que zero.');
+      return;
+    }
+
     if (!selectedCampusId) {
       toast.error('Selecione um campus.');
       return;
@@ -89,6 +96,7 @@ export const EditCourseModal = ({
       const payload: UpdateCursoRequest = {
         nomeCurso: nomeCurso.trim(),
         maximoHorasComplementar: Number(complementaryHours),
+        duracaoEmPeriodos: Number(durationPeriods),
         campusId: selectedCampusId
       };
 
@@ -195,6 +203,30 @@ export const EditCourseModal = ({
                   </div>
 
                   <div className="space-y-2">
+                    <label
+                      htmlFor="editDurationPeriods"
+                      className="block font-medium"
+                    >
+                      Duração do curso (períodos)
+                    </label>
+                    <input
+                      id="editDurationPeriods"
+                      type="number"
+                      min={1}
+                      max={20}
+                      placeholder="Ex: 8"
+                      value={durationPeriods}
+                      onChange={(e) => setDurationPeriods(e.target.value)}
+                      required
+                      className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Usado para calcular o ritmo esperado de horas (máximo ÷
+                      duração).
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="block font-medium">Campus</label>
                     <SelectBox
                       value={selectedCampusId}
@@ -210,6 +242,7 @@ export const EditCourseModal = ({
                       loading ||
                       !nomeCurso.trim() ||
                       !complementaryHours.trim() ||
+                      !durationPeriods.trim() ||
                       !selectedCampusId
                     }
                     className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"

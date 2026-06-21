@@ -208,6 +208,7 @@ export interface AlunoEmRiscoResponse {
   porcentagemConclusao: number;
   periodosDecorridos: number;
   horasPorPeriodo: number;
+  duracaoEmPeriodos: number;
 }
 
 export const listarAlunosEmRisco = async (

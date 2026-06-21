@@ -42,6 +42,7 @@ export const CreateCourseModal = ({
 }: CreateCourseModalProps) => {
   const [newCourseName, setNewCourseName] = useState('');
   const [complementaryHours, setComplementaryHours] = useState('');
+  const [durationPeriods, setDurationPeriods] = useState('8');
   const [selectedCampusId, setSelectedCampusId] = useState('');
   const [campuses, setCampuses] = useState<CampusResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,6 +73,11 @@ export const CreateCourseModal = ({
       return;
     }
 
+    if (Number(durationPeriods) <= 0) {
+      toast.error('A duração em períodos deve ser maior que zero.');
+      return;
+    }
+
     setConfirmCreate(true);
   };
 
@@ -82,6 +88,7 @@ export const CreateCourseModal = ({
       const payload: CreateCursoRequest = {
         nomeCurso: newCourseName,
         maximoHorasComplementar: Number(complementaryHours),
+        duracaoEmPeriodos: Number(durationPeriods),
         campusId: selectedCampusId
       };
 
@@ -93,6 +100,7 @@ export const CreateCourseModal = ({
       onClose();
       setNewCourseName('');
       setComplementaryHours('');
+      setDurationPeriods('8');
       setSelectedCampusId('');
     } catch (error) {
       toast.error(extractApiError(error, 'Não foi possível criar o curso.'));
@@ -183,6 +191,30 @@ export const CreateCourseModal = ({
                   </div>
 
                   <div className="space-y-2">
+                    <label
+                      htmlFor="durationPeriods"
+                      className="block font-medium"
+                    >
+                      Duração do curso (períodos)
+                    </label>
+                    <input
+                      id="durationPeriods"
+                      type="number"
+                      min={1}
+                      max={20}
+                      placeholder="Ex: 8"
+                      value={durationPeriods}
+                      onChange={(e) => setDurationPeriods(e.target.value)}
+                      required
+                      className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Usado para calcular o ritmo esperado de horas (máximo ÷
+                      duração).
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="block font-medium">Campus</label>
                     <SelectBox
                       value={selectedCampusId}
@@ -198,6 +230,7 @@ export const CreateCourseModal = ({
                       loading ||
                       !newCourseName.trim() ||
                       !complementaryHours.trim() ||
+                      !durationPeriods.trim() ||
                       !selectedCampusId
                     }
                     className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"

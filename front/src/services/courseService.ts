@@ -15,6 +15,7 @@ export interface CursoDetalhadoResponse {
   id: string;
   nome: string;
   maximoHorasComplementar: number;
+  duracaoEmPeriodos: number;
   campusId: string;
   nomeCampus: string;
 }
@@ -22,6 +23,7 @@ export interface CursoDetalhadoResponse {
 export interface CreateCursoRequest {
   nomeCurso: string;
   maximoHorasComplementar: number;
+  duracaoEmPeriodos: number;
   campusId: string;
 }
 
@@ -87,6 +89,7 @@ export const obterResumoCursos = async (): Promise<CursoResumoResponse[]> => {
 export interface UpdateCursoRequest {
   nomeCurso: string;
   maximoHorasComplementar: number;
+  duracaoEmPeriodos: number;
   campusId: string;
 }
 

@@ -123,10 +123,11 @@ export default function AlunosEmRiscoPage() {
       <div className="space-y-3">
         {alunosPagina.map((aluno) => {
           const risco = badgeRisco(aluno.porcentagemConclusao);
-          // Ritmo esperado: total de horas exigidas dividido pelos períodos decorridos.
+          // Ritmo esperado: total de horas exigidas dividido pela duração do
+          // curso em períodos (não pelos períodos já decorridos).
           const horasEsperadas =
-            aluno.periodosDecorridos > 0
-              ? aluno.maximoHorasComplementar / aluno.periodosDecorridos
+            aluno.duracaoEmPeriodos > 0
+              ? aluno.maximoHorasComplementar / aluno.duracaoEmPeriodos
               : 0;
           return (
             <div
