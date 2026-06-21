@@ -231,6 +231,28 @@ namespace Back.API.Controllers
                 return NotFound(new { erro = ex.Message });
             }
         }
+        [HttpGet("periodos-validos")]
+        [Authorize(Roles = "ALUNO")]
+        [SwaggerOperation(Summary = "Lista os períodos letivos válidos para o aluno autenticado (sem retroatividade).", Tags = new[] { "Certificados" })]
+        [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> PeriodosValidos([FromServices] GetPeriodosLetivosValidosDoAlunoUseCase useCase)
+        {
+            var identityUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(identityUserId))
+                return Unauthorized();
+
+            try
+            {
+                var periodos = await useCase.ExecuteAsync(identityUserId);
+                return Ok(periodos);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { erro = ex.Message });
+            }
+        }
+
         [HttpGet("por-curso/{cursoId}")]
         [Authorize(Roles = "COORDENADOR")]
         [SwaggerOperation(Summary = "Lista os certificados por curso ID.", Tags = new[] { "Certificados" })]

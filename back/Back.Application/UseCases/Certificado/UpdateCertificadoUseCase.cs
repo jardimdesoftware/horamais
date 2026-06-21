@@ -1,3 +1,4 @@
+using Back.Application.Common;
 using Back.Application.DTOs.Certificado;
 using Back.Application.Extensions;
 using Back.Application.Interfaces.Repositories;
@@ -53,6 +54,10 @@ namespace Back.Application.UseCases.Certificado
             // 3. REGRA DE NEGÓCIO: não permite alterar certificados APROVADOS
             if (certificado.Status == StatusCertificado.APROVADO)
                 throw new InvalidOperationException("Não é possível alterar um certificado que já foi APROVADO.");
+
+            // 3.1 Impede retroatividade do período (anterior ao ingresso / a 2019.2)
+            var periodoIngresso = await _alunoRepo.GetPeriodoIngressoAsync(aluno.Id);
+            PeriodoLetivo.ValidarRegistro(request.PeriodoLetivo, periodoIngresso);
 
             // 4. Valida limites de carga horária excluindo o próprio certificado do somatório
             await _validarLimite.ExecuteAsync(

@@ -72,6 +72,11 @@ export interface CertificadoPorCursoResponse {
   cargaHorariaCorrigida: boolean;
 }
 
+export const listarPeriodosLetivosValidos = async (): Promise<string[]> => {
+  const response = await api.get<string[]>('/Certificado/periodos-validos');
+  return response.data;
+};
+
 export const enviarCertificado = async (
   form: FormData
 ): Promise<{ certificadoId: string }> => {

@@ -38,6 +38,15 @@ public class AlunoRepository : IAlunoRepository
         return await _context.Alunos
             .FirstOrDefaultAsync(a => a.IdentityUserId == identityUserId);
     }
+
+    public async Task<string?> GetPeriodoIngressoAsync(Guid alunoId)
+    {
+        return await _context.Alunos
+            .AsNoTracking()
+            .Where(a => a.Id == alunoId)
+            .Select(a => a.Turma!.Periodo)
+            .FirstOrDefaultAsync();
+    }
     public async Task<IEnumerable<Aluno>> GetAllWithAtividadesAsync()
     {
         return await _context.Alunos
