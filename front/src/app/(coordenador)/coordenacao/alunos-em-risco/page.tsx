@@ -131,11 +131,9 @@ export default function AlunosEmRiscoPage() {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div>
                   <p className="font-semibold text-gray-900">{aluno.nome}</p>
-                  <p className="text-sm text-gray-500">
-                    {aluno.matricula} · {aluno.cursoNome}
-                  </p>
+                  <p className="text-sm text-gray-500">{aluno.matricula}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Turma {aluno.turmaCodigo} · Período {aluno.turmaPeriodo}
+                    {aluno.cursoNome} · Turma {aluno.turmaPeriodo}
                   </p>
                 </div>
 
