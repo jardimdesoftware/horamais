@@ -82,6 +82,7 @@ public static class DependencyInjection
         services.AddScoped<GetCertificadoAnexoUseCase>();
         services.AddScoped<UpdateCertificadoUseCase>();
         services.AddScoped<DeleteCertificadoUseCase>();
+        services.AddScoped<GetPeriodosLetivosValidosDoAlunoUseCase>();
         //lembrete de e-mail
         services.AddScoped<ResolverCursoCoordenadorUseCase>();
         services.AddScoped<CriarLembreteEmailUseCase>();
