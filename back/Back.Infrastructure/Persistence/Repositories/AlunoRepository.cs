@@ -47,6 +47,15 @@ public class AlunoRepository : IAlunoRepository
             .Select(a => a.Turma!.Periodo)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<Guid?> GetCursoIdAsync(Guid alunoId)
+    {
+        return await _context.Alunos
+            .AsNoTracking()
+            .Where(a => a.Id == alunoId)
+            .Select(a => (Guid?)a.Turma!.CursoId)
+            .FirstOrDefaultAsync();
+    }
     public async Task<IEnumerable<Aluno>> GetAllWithAtividadesAsync()
     {
         return await _context.Alunos

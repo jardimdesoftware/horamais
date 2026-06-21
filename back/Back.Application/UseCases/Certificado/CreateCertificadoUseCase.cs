@@ -18,6 +18,7 @@ public class CreateCertificadoUseCase
     private readonly IAlunoRepository _alunoRepo;
     private readonly IFileStorageService _storage;
     private readonly ValidarLimiteCertificadoUseCase _validarLimite;
+    private readonly ICertificadoRealtimeNotifier _realtime;
 
     public CreateCertificadoUseCase(
         IAlunoAtividadeRepository alunoAtividadeRepo,
@@ -26,7 +27,8 @@ public class CreateCertificadoUseCase
         IAtividadeRepository atividadeRepo,
         IAlunoRepository alunoRepo,
         IFileStorageService storage,
-        ValidarLimiteCertificadoUseCase validarLimite)
+        ValidarLimiteCertificadoUseCase validarLimite,
+        ICertificadoRealtimeNotifier realtime)
     {
         _alunoAtividadeRepo = alunoAtividadeRepo;
         _certificadoRepo = certificadoRepo;
@@ -35,6 +37,7 @@ public class CreateCertificadoUseCase
         _alunoRepo = alunoRepo;
         _storage = storage;
         _validarLimite = validarLimite;
+        _realtime = realtime;
     }
 
     public async Task<Guid> ExecuteAsync(CreateCertificadoRequest request)
@@ -106,6 +109,13 @@ public class CreateCertificadoUseCase
             .Build();
 
         await _certificadoRepo.AddAsync(certificado);
+
+        // Avisa, em tempo real, o coordenador do curso que há um novo certificado
+        // a validar — independentemente da tela em que ele esteja.
+        var cursoId = await _alunoRepo.GetCursoIdAsync(request.AlunoId);
+        if (cursoId.HasValue)
+            await _realtime.NotificarNovoCertificadoAsync(cursoId.Value);
+
         return certificado.Id;
     }
 }
