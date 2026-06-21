@@ -132,6 +132,7 @@ export const CertificateDetailsCard: React.FC<
                 <input
                   type="number"
                   min={1}
+                  max={workloadValue}
                   step={1}
                   value={editedWorkload}
                   onChange={(e) => {
@@ -139,7 +140,10 @@ export const CertificateDetailsCard: React.FC<
                     if (Number.isNaN(parsedValue)) {
                       return;
                     }
-                    setEditedWorkload(Math.max(1, parsedValue));
+                    // A correção só pode reduzir: nunca acima do valor informado.
+                    setEditedWorkload(
+                      Math.min(workloadValue, Math.max(1, parsedValue))
+                    );
                   }}
                   className="w-24 border border-gray-300 rounded px-2 py-1 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
