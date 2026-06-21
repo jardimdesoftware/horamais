@@ -123,6 +123,11 @@ export default function AlunosEmRiscoPage() {
       <div className="space-y-3">
         {alunosPagina.map((aluno) => {
           const risco = badgeRisco(aluno.porcentagemConclusao);
+          // Ritmo esperado: total de horas exigidas dividido pelos períodos decorridos.
+          const horasEsperadas =
+            aluno.periodosDecorridos > 0
+              ? aluno.maximoHorasComplementar / aluno.periodosDecorridos
+              : 0;
           return (
             <div
               key={aluno.id}
@@ -140,7 +145,10 @@ export default function AlunosEmRiscoPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant={risco.variant}>{risco.label}</Badge>
                   <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-medium">
-                    {aluno.horasPorPeriodo.toFixed(1)} h/período
+                    atual: {aluno.horasPorPeriodo.toFixed(1)} h/período
+                  </span>
+                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-medium">
+                    esperado: {horasEsperadas.toFixed(1)} h/período
                   </span>
                   <span className="text-xs text-gray-500">
                     {aluno.periodosDecorridos} período
