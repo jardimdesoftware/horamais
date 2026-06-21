@@ -33,7 +33,7 @@ export function CertificadoNotificacao() {
     void refetch();
   }, [pathname, refetch]);
 
-  if (!cursoId || pendentes === 0 || pathname === VALIDACAO_PATH) return null;
+  if (!cursoId || pendentes === 0) return null;
 
   const handleClick = () => router.push(VALIDACAO_PATH);
 

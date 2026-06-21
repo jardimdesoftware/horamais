@@ -12,6 +12,13 @@ const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
 const HUB_URL = `${apiBase.replace(/\/api\/?$/, '')}/hubs/certificado`;
 
 /**
+ * Evento de janela que sinaliza que o conjunto de certificados do curso mudou
+ * (ex.: o coordenador aprovou/reprovou na tela de validação). A notificação
+ * global escuta este evento para reatualizar a contagem de pendentes na hora.
+ */
+export const CERTIFICADOS_ATUALIZADOS_EVENT = 'certificados:atualizados';
+
+/**
  * Mantém a contagem de certificados pendentes do curso do coordenador, usada
  * pela notificação global. A contagem é buscada via REST ao montar (para que o
  * aviso apareça mesmo se o coordenador não estava conectado quando o certificado
@@ -58,6 +65,13 @@ export function useCertificadoNotificacoes(cursoId: string | undefined) {
       void refetch();
     });
 
+    // Reatualiza quando o próprio coordenador altera certificados (aprovar/reprovar).
+    const onCertificadosAtualizados = () => void refetch();
+    window.addEventListener(
+      CERTIFICADOS_ATUALIZADOS_EVENT,
+      onCertificadosAtualizados
+    );
+
     // O servidor perde os grupos quando a conexão cai; reentra ao reconectar.
     connection.onreconnected(() => {
       if (!cancelled) {
@@ -77,6 +91,10 @@ export function useCertificadoNotificacoes(cursoId: string | undefined) {
 
     return () => {
       cancelled = true;
+      window.removeEventListener(
+        CERTIFICADOS_ATUALIZADOS_EVENT,
+        onCertificadosAtualizados
+      );
       connection.stop();
     };
   }, [cursoId, refetch]);

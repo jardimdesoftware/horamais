@@ -24,6 +24,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 
+import { CERTIFICADOS_ATUALIZADOS_EVENT } from '@/hooks/useCertificadoNotificacoes';
 import { useLoadingOverlay } from '@/hooks/useLoadingOverlay';
 import { extractApiError } from '@/lib/apiError';
 import {
@@ -168,6 +169,7 @@ export default function ValidacaoCertificadosPage() {
         })
       });
 
+      window.dispatchEvent(new Event(CERTIFICADOS_ATUALIZADOS_EVENT));
       toast.success('Certificado aprovado com sucesso!');
     } catch (error) {
       toast.error(
@@ -213,6 +215,7 @@ export default function ValidacaoCertificadosPage() {
       });
 
       setRejectModalOpen(false);
+      window.dispatchEvent(new Event(CERTIFICADOS_ATUALIZADOS_EVENT));
       toast.success('Certificado reprovado com sucesso!');
     } catch (error) {
       toast.error(
