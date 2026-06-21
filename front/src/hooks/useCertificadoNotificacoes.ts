@@ -4,7 +4,7 @@ import {
   listarCertificadosPorCurso,
   StatusCertificado
 } from '@/services/certificateService';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 // O hub é mapeado na raiz do backend (/hubs/certificado), fora do prefixo /api
 // dos controllers. Derivamos a URL a partir da mesma env da API.
@@ -45,6 +45,10 @@ export function useCertificadoNotificacoes(cursoId: string | undefined) {
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, { withCredentials: false })
       .withAutomaticReconnect()
+      // Silencia o log do SignalR: tratamos falhas aqui mesmo. Sem isto, o abort
+      // do negotiate causado pelo duplo-mount do StrictMode (dev) aparece como
+      // "Console Error" no overlay do Next, apesar de ser inofensivo.
+      .configureLogging(LogLevel.Critical)
       .build();
 
     let cancelled = false;
