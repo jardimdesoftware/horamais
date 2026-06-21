@@ -16,12 +16,25 @@ public class CreateCertificadoUseCaseTests
     private readonly Mock<ICertificadoRepository> _certRepo = new();
     private readonly Mock<ILimiteHorasAlunoRepository> _limiteRepo = new();
     private readonly Mock<IAtividadeRepository> _atvRepo = new();
+    private readonly Mock<IAlunoRepository> _alunoRepo = new();
     private readonly Mock<Back.Application.Interfaces.Services.IFileStorageService> _storage = new();
 
     private CreateCertificadoUseCase CreateUseCase()
     {
         var validarLimite = new ValidarLimiteCertificadoUseCase(_certRepo.Object);
-        return new(_alunoAtvRepo.Object, _certRepo.Object, _limiteRepo.Object, _atvRepo.Object, _storage.Object, validarLimite);
+        return new(_alunoAtvRepo.Object, _certRepo.Object, _limiteRepo.Object, _atvRepo.Object, _alunoRepo.Object, _storage.Object, validarLimite);
+    }
+
+    private static Mock<IFormFile> CriarAnexoMock(out MemoryStream stream)
+    {
+        var fileBytes = Encoding.UTF8.GetBytes("PDF");
+        stream = new MemoryStream(fileBytes);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.ContentType).Returns("application/pdf");
+        fileMock.Setup(f => f.FileName).Returns("file.pdf");
+        fileMock.Setup(f => f.Length).Returns(fileBytes.Length);
+        fileMock.Setup(f => f.OpenReadStream()).Returns(stream);
+        return fileMock;
     }
 
     [Fact]
@@ -41,14 +54,11 @@ public class CreateCertificadoUseCaseTests
             .ReturnsAsync([]);
         _storage.Setup(s => s.UploadAsync(It.IsAny<IFormFile>(), It.IsAny<string>()))
             .ReturnsAsync((IFormFile _, string key) => key);
+        _alunoRepo.Setup(r => r.GetPeriodoIngressoAsync(It.IsAny<Guid>()))
+            .ReturnsAsync("2023.1");
 
-        var fileBytes = Encoding.UTF8.GetBytes("PDF");
-        using var fileStream = new MemoryStream(fileBytes);
-        var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.ContentType).Returns("application/pdf");
-        fileMock.Setup(f => f.FileName).Returns("file.pdf");
-        fileMock.Setup(f => f.Length).Returns(fileBytes.Length);
-        fileMock.Setup(f => f.OpenReadStream()).Returns(fileStream);
+        var fileMock = CriarAnexoMock(out var fileStream);
+        using var _ = fileStream;
 
         var req = new CreateCertificadoRequest
         {
@@ -77,4 +87,66 @@ public class CreateCertificadoUseCaseTests
         id.Should().NotBeEmpty();
         _certRepo.Verify(r => r.AddAsync(It.IsAny<Certificado>()), Times.Once);
     }
+
+    [Fact]
+    public async Task Deve_Rejeitar_Periodo_Anterior_Ao_Ingresso()
+    {
+        // Arrange: aluno ingressou em 2023.2, tenta registrar em 2022.1
+        _alunoRepo.Setup(r => r.GetPeriodoIngressoAsync(It.IsAny<Guid>()))
+            .ReturnsAsync("2023.2");
+
+        var fileMock = CriarAnexoMock(out var fileStream);
+        using var _ = fileStream;
+
+        var req = NovaRequest(fileMock.Object, periodo: "2022.1");
+        var useCase = CreateUseCase();
+
+        // Act
+        var act = async () => await useCase.ExecuteAsync(req);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*anterior ao seu ingresso*");
+        _certRepo.Verify(r => r.AddAsync(It.IsAny<Certificado>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Deve_Rejeitar_Periodo_Anterior_A_2019_2()
+    {
+        // Arrange: sem ingresso conhecido, período abaixo do mínimo do sistema
+        _alunoRepo.Setup(r => r.GetPeriodoIngressoAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((string?)null);
+
+        var fileMock = CriarAnexoMock(out var fileStream);
+        using var _ = fileStream;
+
+        var req = NovaRequest(fileMock.Object, periodo: "2019.1");
+        var useCase = CreateUseCase();
+
+        // Act
+        var act = async () => await useCase.ExecuteAsync(req);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*2019.2*");
+        _certRepo.Verify(r => r.AddAsync(It.IsAny<Certificado>()), Times.Never);
+    }
+
+    private static CreateCertificadoRequest NovaRequest(IFormFile anexo, string periodo) => new()
+    {
+        TituloAtividade = "Curso X",
+        Instituicao = "IFPE",
+        Local = "Campus",
+        Categoria = "Cat",
+        Grupo = "G1",
+        PeriodoLetivo = periodo,
+        CargaHoraria = 20,
+        DataInicio = DateTime.Today,
+        DataFim = DateTime.Today,
+        TotalPeriodos = 1,
+        Anexo = anexo,
+        Tipo = Back.Domain.Entities.Certificado.TipoCertificado.COMPLEMENTAR,
+        AlunoId = Guid.NewGuid(),
+        AtividadeId = Guid.NewGuid()
+    };
 }

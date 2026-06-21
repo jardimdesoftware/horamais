@@ -1,3 +1,4 @@
+using Back.Application.Common;
 using Back.Application.DTOs.Certificado;
 using Back.Application.Extensions;
 using Back.Application.Interfaces.Repositories;
@@ -14,6 +15,7 @@ public class CreateCertificadoUseCase
     private readonly ICertificadoRepository _certificadoRepo;
     private readonly ILimiteHorasAlunoRepository _limiteRepo;
     private readonly IAtividadeRepository _atividadeRepo;
+    private readonly IAlunoRepository _alunoRepo;
     private readonly IFileStorageService _storage;
     private readonly ValidarLimiteCertificadoUseCase _validarLimite;
 
@@ -22,6 +24,7 @@ public class CreateCertificadoUseCase
         ICertificadoRepository certificadoRepo,
         ILimiteHorasAlunoRepository limiteRepo,
         IAtividadeRepository atividadeRepo,
+        IAlunoRepository alunoRepo,
         IFileStorageService storage,
         ValidarLimiteCertificadoUseCase validarLimite)
     {
@@ -29,6 +32,7 @@ public class CreateCertificadoUseCase
         _certificadoRepo = certificadoRepo;
         _limiteRepo = limiteRepo;
         _atividadeRepo = atividadeRepo;
+        _alunoRepo = alunoRepo;
         _storage = storage;
         _validarLimite = validarLimite;
     }
@@ -39,6 +43,11 @@ public class CreateCertificadoUseCase
             throw new InvalidOperationException("O anexo é obrigatório e deve conter conteúdo válido.");
 
         request.Anexo.ValidateAnexo();
+
+        // Impede retroatividade: período não pode ser anterior ao ingresso do aluno
+        // (nem anterior ao período mínimo do sistema, 2019.2).
+        var periodoIngresso = await _alunoRepo.GetPeriodoIngressoAsync(request.AlunoId);
+        PeriodoLetivo.ValidarRegistro(request.PeriodoLetivo, periodoIngresso);
 
         var alunoAtividade = await _alunoAtividadeRepo
             .GetByAlunoEAtividadeAsync(request.AlunoId, request.AtividadeId);

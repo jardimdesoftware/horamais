@@ -12,6 +12,9 @@ public interface IAlunoRepository
     Task<Aluno?> GetByIdAsync(Guid id);
     Task<Aluno?> GetByIdentityUserIdAsync(string identityUserId);
 
+    /// <summary>Período de ingresso do aluno (período da turma). Null se aluno/turma não existir.</summary>
+    Task<string?> GetPeriodoIngressoAsync(Guid alunoId);
+
     Task<IEnumerable<Aluno>> GetAllWithAtividadesAsync();
     Task<Aluno?> GetByIdWithAtividadesAsync(Guid id);
     Task UpdateAsync(Aluno aluno);
