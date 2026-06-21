@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import {
+  listarCertificadosPorCurso,
+  StatusCertificado
+} from '@/services/certificateService';
 import { HubConnectionBuilder } from '@microsoft/signalr';
 
 // O hub é mapeado na raiz do backend (/hubs/certificado), fora do prefixo /api
@@ -8,20 +12,36 @@ const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
 const HUB_URL = `${apiBase.replace(/\/api\/?$/, '')}/hubs/certificado`;
 
 /**
- * Escuta, via SignalR, a chegada de novos certificados no curso do coordenador.
- * Cada evento "NovoCertificado" incrementa um contador, que o componente de
- * notificação usa para avisar o coordenador em qualquer tela. `reset` zera a
- * contagem (ex.: ao abrir a tela de validação).
+ * Mantém a contagem de certificados pendentes do curso do coordenador, usada
+ * pela notificação global. A contagem é buscada via REST ao montar (para que o
+ * aviso apareça mesmo se o coordenador não estava conectado quando o certificado
+ * chegou) e atualizada em tempo real: o backend empurra "NovoCertificado" para o
+ * grupo do curso (SignalR) e nós refazemos o fetch autenticado.
  *
- * Roda só no client (useEffect), nunca no SSR. Sem a conexão, a aplicação segue
- * funcionando normalmente — o tempo real é um aprimoramento.
+ * O consumidor chama `refetch` para o baseline (ao montar e ao navegar); este
+ * hook cuida da assinatura em tempo real e refaz o fetch a cada evento. Roda só
+ * no client; sem a conexão, o baseline via REST ainda funciona.
  */
 export function useCertificadoNotificacoes(cursoId: string | undefined) {
-  const [novos, setNovos] = useState(0);
+  const [pendentes, setPendentes] = useState(0);
+
+  const refetch = useCallback(async () => {
+    if (!cursoId) return;
+    try {
+      const lista = await listarCertificadosPorCurso(cursoId);
+      setPendentes(
+        lista.filter((c) => c.status === StatusCertificado.PENDENTE).length
+      );
+    } catch {
+      // Silencioso: a notificação é um aprimoramento; falha de rede não quebra a tela.
+    }
+  }, [cursoId]);
 
   useEffect(() => {
     if (!cursoId) return;
 
+    // O baseline (contagem ao montar e a cada navegação) é disparado pelo
+    // consumidor via `refetch`; aqui cuidamos apenas da assinatura em tempo real.
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, { withCredentials: false })
       .withAutomaticReconnect()
@@ -31,12 +51,15 @@ export function useCertificadoNotificacoes(cursoId: string | undefined) {
     const entrarNoCurso = () => connection.invoke('EntrarCurso', cursoId);
 
     connection.on('NovoCertificado', () => {
-      setNovos((n) => n + 1);
+      void refetch();
     });
 
     // O servidor perde os grupos quando a conexão cai; reentra ao reconectar.
     connection.onreconnected(() => {
-      if (!cancelled) entrarNoCurso();
+      if (!cancelled) {
+        entrarNoCurso();
+        void refetch();
+      }
     });
 
     connection
@@ -52,9 +75,7 @@ export function useCertificadoNotificacoes(cursoId: string | undefined) {
       cancelled = true;
       connection.stop();
     };
-  }, [cursoId]);
+  }, [cursoId, refetch]);
 
-  const reset = useCallback(() => setNovos(0), []);
-
-  return { novos, reset };
+  return { pendentes, refetch };
 }

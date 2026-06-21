@@ -10,13 +10,14 @@ import { useCertificadoNotificacoes } from '@/hooks/useCertificadoNotificacoes';
 const VALIDACAO_PATH = '/coordenacao/certificados';
 
 /**
- * Notificação global de chegada de certificados para o coordenador. Fica no
- * canto superior direito e aparece em qualquer tela enquanto houver novos
- * certificados a validar. Ao clicar, leva à tela de validação e zera o aviso.
+ * Notificação global de certificados pendentes para o coordenador. Fica no canto
+ * superior direito e aparece em qualquer tela enquanto houver certificados a
+ * validar. Ao clicar, leva à tela de validação.
  *
- * É alimentada por SignalR (mesmo padrão do tempo real da turma): o backend
- * empurra "NovoCertificado" para o grupo do curso quando um aluno envia um
- * certificado.
+ * Combina baseline via REST (aparece mesmo se o certificado chegou enquanto o
+ * coordenador estava em outra parte) com tempo real via SignalR (mesmo padrão do
+ * tempo real da turma): o backend empurra "NovoCertificado" para o grupo do curso
+ * quando um aluno envia um certificado.
  */
 export function CertificadoNotificacao() {
   const { data: session } = useSession();
@@ -24,24 +25,22 @@ export function CertificadoNotificacao() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { novos, reset } = useCertificadoNotificacoes(cursoId);
+  const { pendentes, refetch } = useCertificadoNotificacoes(cursoId);
 
-  // Ao entrar na própria tela de validação, o aviso perde o sentido: zera.
+  // Reatualiza ao trocar de tela (ex.: depois de validar e sair da validação),
+  // já que o layout — e este componente — não remontam entre telas do coordenador.
   useEffect(() => {
-    if (pathname === VALIDACAO_PATH) reset();
-  }, [pathname, reset]);
+    void refetch();
+  }, [pathname, refetch]);
 
-  if (!cursoId || novos === 0 || pathname === VALIDACAO_PATH) return null;
+  if (!cursoId || pendentes === 0 || pathname === VALIDACAO_PATH) return null;
 
-  const handleClick = () => {
-    reset();
-    router.push(VALIDACAO_PATH);
-  };
+  const handleClick = () => router.push(VALIDACAO_PATH);
 
   const label =
-    novos === 1
-      ? 'Novo certificado recebido'
-      : `${novos} novos certificados recebidos`;
+    pendentes === 1
+      ? '1 certificado para validar'
+      : `${pendentes} certificados para validar`;
 
   return (
     <button
@@ -50,10 +49,10 @@ export function CertificadoNotificacao() {
       aria-label={`${label}. Clique para validar.`}
       className="fixed top-20 right-4 z-50 flex items-center gap-3 rounded-lg bg-blue-600 px-4 py-3 text-white shadow-lg transition-colors hover:bg-blue-700 cursor-pointer"
     >
-      <span className="relative flex-shrink-0">
+      <span className="relative shrink-0">
         <FaBell className="h-5 w-5" />
         <span className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold">
-          {novos > 99 ? '99+' : novos}
+          {pendentes > 99 ? '99+' : pendentes}
         </span>
       </span>
       <span className="text-left">
