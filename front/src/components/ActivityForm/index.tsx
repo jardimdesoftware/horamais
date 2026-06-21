@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { useActivityForm } from './hooks/useActivityForm';
-import { ActivityFormSchema } from './schemas/schema';
+import { ACTIVITY_MAX_LENGTHS, ActivityFormSchema } from './schemas/schema';
 
 interface Props {
   tipo: 'EXTENSAO' | 'COMPLEMENTAR';
@@ -59,6 +59,7 @@ export function ActivityForm({ tipo, onSubmit, onCancel, isVisible }: Props) {
               <Input
                 id="nome"
                 {...register('nome')}
+                maxLength={ACTIVITY_MAX_LENGTHS.nome}
                 placeholder="Digite o nome da atividade"
               />
               {errors.nome && (
@@ -73,6 +74,7 @@ export function ActivityForm({ tipo, onSubmit, onCancel, isVisible }: Props) {
               <Input
                 id="grupo"
                 {...register('grupo')}
+                maxLength={ACTIVITY_MAX_LENGTHS.grupo}
                 placeholder="Ex: I, II, III"
               />
               {errors.grupo && (
@@ -87,6 +89,7 @@ export function ActivityForm({ tipo, onSubmit, onCancel, isVisible }: Props) {
               <Input
                 id="categoria"
                 {...register('categoria')}
+                maxLength={ACTIVITY_MAX_LENGTHS.categoria}
                 placeholder="Ex: Categoria 1"
               />
               {errors.categoria && (
@@ -101,6 +104,7 @@ export function ActivityForm({ tipo, onSubmit, onCancel, isVisible }: Props) {
               <Input
                 id="categoriaKey"
                 {...register('categoriaKey')}
+                maxLength={ACTIVITY_MAX_LENGTHS.categoriaKey}
                 placeholder="Ensino, Pesquisa, Extensão"
               />
               {errors.categoriaKey && (
