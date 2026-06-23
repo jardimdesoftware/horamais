@@ -37,6 +37,9 @@ public class AuthService : IAuthService
         if (identityUser == null || !await _userManager.CheckPasswordAsync(identityUser, dto.Senha))
             throw new UnauthorizedAccessException("Email ou senha inválidos.");
 
+        if (!identityUser.EmailConfirmed)
+            throw new UnauthorizedAccessException("E-mail não verificado. Verifique sua caixa de entrada para confirmar o código de cadastro.");
+
         var roles = await _userManager.GetRolesAsync(identityUser);
         var role = roles.FirstOrDefault() ?? throw new UnauthorizedAccessException("Usuário sem perfil.");
 
