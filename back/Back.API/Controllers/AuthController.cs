@@ -18,17 +18,23 @@ public class AuthController : ControllerBase
     private readonly ForgotPasswordUseCase _forgotPasswordUseCase;
     private readonly ValidateResetCodeUseCase _validateResetCodeUseCase;
     private readonly ResetPasswordUseCase _resetPasswordUseCase;
+    private readonly ConfirmarEmailUseCase _confirmarEmailUseCase;
+    private readonly ReenviarVerificacaoUseCase _reenviarVerificacaoUseCase;
 
     public AuthController(
         LoginUseCase loginUseCase,
         ForgotPasswordUseCase forgotPasswordUseCase,
         ValidateResetCodeUseCase validateResetCodeUseCase,
-        ResetPasswordUseCase resetPasswordUseCase)
+        ResetPasswordUseCase resetPasswordUseCase,
+        ConfirmarEmailUseCase confirmarEmailUseCase,
+        ReenviarVerificacaoUseCase reenviarVerificacaoUseCase)
     {
         _loginUseCase = loginUseCase;
         _forgotPasswordUseCase = forgotPasswordUseCase;
         _validateResetCodeUseCase = validateResetCodeUseCase;
         _resetPasswordUseCase = resetPasswordUseCase;
+        _confirmarEmailUseCase = confirmarEmailUseCase;
+        _reenviarVerificacaoUseCase = reenviarVerificacaoUseCase;
     }
 
     [HttpPost("login")]
@@ -81,5 +87,31 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("confirm-email")]
+    [ProducesResponseType(typeof(ConfirmEmailResponseDto), 200)]
+    [ProducesResponseType(400)]
+    [SwaggerOperation(Summary = "Confirmar e-mail", Description = "Confirma o e-mail de um cadastro pendente usando o código de 6 dígitos enviado por e-mail.")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequestDto dto)
+    {
+        try
+        {
+            var result = await _confirmarEmailUseCase.ExecuteAsync(dto);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("resend-verification")]
+    [ProducesResponseType(typeof(ResendVerificationResponseDto), 200)]
+    [SwaggerOperation(Summary = "Reenviar verificação", Description = "Reenvia o código de verificação de e-mail para um cadastro ainda pendente.")]
+    public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequestDto dto)
+    {
+        var result = await _reenviarVerificacaoUseCase.ExecuteAsync(dto);
+        return Ok(result);
     }
 }
