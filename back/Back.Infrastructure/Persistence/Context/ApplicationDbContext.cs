@@ -36,6 +36,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<ConviteCoordenador> Convites { get; set; }
     public DbSet<AlunoAtividade> AlunoAtividades { get; set; }
     public DbSet<ResetPasswordCode> ResetPasswordCodes { get; set; }
+    public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
     public DbSet<LembreteEmail> LembretesEmail { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
