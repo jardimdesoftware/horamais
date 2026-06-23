@@ -18,13 +18,13 @@ public class IdentityService : IIdentityService
         _roleManager = roleManager;
     }
 
-    public async Task<(bool Success, string UserId, string[] Errors)> CreateUserAsync(string email, string password, string role)
+    public async Task<(bool Success, string UserId, string[] Errors)> CreateUserAsync(string email, string password, string role, bool emailConfirmed = true)
     {
         var user = new IdentityUser
         {
             UserName = email,
             Email = email,
-            EmailConfirmed = true
+            EmailConfirmed = emailConfirmed
         };
 
         var result = await _userManager.CreateAsync(user, password);
