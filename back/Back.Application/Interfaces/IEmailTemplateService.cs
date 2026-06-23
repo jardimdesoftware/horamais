@@ -4,6 +4,7 @@ public interface IEmailTemplateService
 {
     string RenderConviteCoordenador(string link);
     string RenderResetSenha(string nome, string codigo);
+    string RenderVerificacaoEmail(string nome, string codigo);
     string RenderLembretePendencia(string nome, string mensagem);
     string RenderConclusaoCargaSecretaria(string nome, string matricula, string tipo, int horasConcluidas, int horasExigidas);
 }
