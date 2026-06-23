@@ -22,8 +22,13 @@ export const FirstAccess = () => {
     turma,
     form,
     loading,
+    emailCadastrado,
+    codigoVerificacao,
+    setCodigoVerificacao,
     handleValidarCodigo,
-    handleFinalizarCadastro
+    handleFinalizarCadastro,
+    handleConfirmarEmail,
+    handleReenviar
   } = useFirstAccess();
 
   const {
@@ -186,6 +191,58 @@ export const FirstAccess = () => {
               >
                 {loading ? 'Finalizando...' : 'Finalizar'}
               </Button>
+            </form>
+          )}
+
+          {step === 3 && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleConfirmarEmail();
+              }}
+            >
+              <p className="text-sm text-gray-700 mb-4 text-center">
+                Enviamos um código de 6 dígitos para{' '}
+                <strong>{emailCadastrado}</strong>. Insira-o abaixo para ativar
+                sua conta.
+              </p>
+
+              <label className="block mb-1 text-sm">
+                Código de verificação
+              </label>
+              <Input
+                placeholder="000000"
+                icon={faKey}
+                value={codigoVerificacao}
+                onChange={(e) =>
+                  setCodigoVerificacao(
+                    e.target.value.replace(/\D/g, '').slice(0, 6)
+                  )
+                }
+              />
+              <div className="flex items-center gap-2 bg-[#1351B4] text-white text-sm p-2 rounded-md mb-6 mt-0.5">
+                <span>
+                  Não encontrou? Verifique também a caixa de spam. O código
+                  expira em 24 horas.
+                </span>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading || codigoVerificacao.length !== 6}
+                className="w-full"
+              >
+                {loading ? 'Confirmando...' : 'Confirmar e-mail'}
+              </Button>
+
+              <button
+                type="button"
+                onClick={handleReenviar}
+                disabled={loading}
+                className="w-full mt-3 text-sm text-[#1351B4] font-semibold hover:underline disabled:opacity-50"
+              >
+                Reenviar código
+              </button>
             </form>
           )}
         </div>

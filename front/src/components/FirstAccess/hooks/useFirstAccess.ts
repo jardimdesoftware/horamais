@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 
 import { useCriarAluno } from '@/hooks/useCriarAluno';
 import { extractApiError } from '@/lib/apiError';
+import { confirmEmail, resendVerification } from '@/services/authRecovery';
 import { verificarTurmaExiste } from '@/services/classService';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -19,6 +20,10 @@ export const useFirstAccess = () => {
     null
   );
   const [loading, setLoading] = useState(false);
+
+  // E-mail do cadastro pendente e código de verificação (etapa 3)
+  const [emailCadastrado, setEmailCadastrado] = useState('');
+  const [codigoVerificacao, setCodigoVerificacao] = useState('');
 
   const { mutateAsync: criarAlunoAsync, isPending: isCriandoAluno } =
     useCriarAluno();
@@ -60,12 +65,49 @@ export const useFirstAccess = () => {
 
     try {
       await criarAlunoAsync({ ...data, turmaCodigo: turma.codigo });
+      setEmailCadastrado(data.email);
       toast.success(
-        'Cadastro realizado com sucesso! Você pode acessar o sistema agora.'
+        'Cadastro iniciado! Enviamos um código de verificação para o seu e-mail.'
       );
-      router.push('/');
+      setStep(3);
     } catch (err) {
       toast.error(extractApiError(err, 'Erro ao cadastrar. Tente novamente.'));
+    }
+  };
+
+  const handleConfirmarEmail = async () => {
+    if (!emailCadastrado || codigoVerificacao.length !== 6) return;
+
+    try {
+      setLoading(true);
+      await confirmEmail({
+        email: emailCadastrado,
+        code: codigoVerificacao
+      });
+      toast.success('E-mail confirmado! Você já pode acessar o sistema.');
+      router.push('/');
+    } catch (err) {
+      toast.error(
+        extractApiError(err, 'Código inválido ou expirado. Tente novamente.')
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReenviar = async () => {
+    if (!emailCadastrado) return;
+
+    try {
+      setLoading(true);
+      await resendVerification({ email: emailCadastrado });
+      toast.success('Enviamos um novo código. Verifique sua caixa de entrada.');
+    } catch (err) {
+      toast.error(
+        extractApiError(err, 'Erro ao reenviar o código. Tente novamente.')
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,7 +119,12 @@ export const useFirstAccess = () => {
     turma,
     form,
     loading: loading || isCriandoAluno,
+    emailCadastrado,
+    codigoVerificacao,
+    setCodigoVerificacao,
     handleValidarCodigo,
-    handleFinalizarCadastro
+    handleFinalizarCadastro,
+    handleConfirmarEmail,
+    handleReenviar
   };
 };

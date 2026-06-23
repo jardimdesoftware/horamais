@@ -51,3 +51,37 @@ export const resetPassword = async (
   );
   return res.data;
 };
+
+export interface ConfirmEmailRequest {
+  email: string;
+  code: string;
+}
+export interface ConfirmEmailResponse {
+  message: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+export interface ResendVerificationResponse {
+  message: string;
+}
+
+// Confirma o e-mail de um cadastro pendente com o código de 6 dígitos
+export const confirmEmail = async (
+  data: ConfirmEmailRequest
+): Promise<ConfirmEmailResponse> => {
+  const res = await api.post<ConfirmEmailResponse>('/Auth/confirm-email', data);
+  return res.data;
+};
+
+// Reenvia o código de verificação de e-mail
+export const resendVerification = async (
+  data: ResendVerificationRequest
+): Promise<ResendVerificationResponse> => {
+  const res = await api.post<ResendVerificationResponse>(
+    '/Auth/resend-verification',
+    data
+  );
+  return res.data;
+};
