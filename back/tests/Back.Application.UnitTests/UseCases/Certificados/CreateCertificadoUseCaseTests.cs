@@ -18,11 +18,12 @@ public class CreateCertificadoUseCaseTests
     private readonly Mock<IAtividadeRepository> _atvRepo = new();
     private readonly Mock<IAlunoRepository> _alunoRepo = new();
     private readonly Mock<Back.Application.Interfaces.Services.IFileStorageService> _storage = new();
+    private readonly Mock<Back.Application.Interfaces.Services.ICertificadoRealtimeNotifier> _realtime = new();
 
     private CreateCertificadoUseCase CreateUseCase()
     {
         var validarLimite = new ValidarLimiteCertificadoUseCase(_certRepo.Object);
-        return new(_alunoAtvRepo.Object, _certRepo.Object, _limiteRepo.Object, _atvRepo.Object, _alunoRepo.Object, _storage.Object, validarLimite);
+        return new(_alunoAtvRepo.Object, _certRepo.Object, _limiteRepo.Object, _atvRepo.Object, _alunoRepo.Object, _storage.Object, validarLimite, _realtime.Object);
     }
 
     private static Mock<IFormFile> CriarAnexoMock(out MemoryStream stream)
