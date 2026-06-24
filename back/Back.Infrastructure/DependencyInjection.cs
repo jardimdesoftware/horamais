@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<ILimiteHorasAlunoRepository, LimiteHorasAlunoRepository>();
         services.AddScoped<IResetPasswordRepository, ResetPasswordRepository>();
         services.AddScoped<ILembreteEmailRepository, LembreteEmailRepository>();
+        services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
         services.AddScoped<ValidarLimiteCertificadoUseCase>();
         services.AddScoped<IIdentityLookupService, IdentityLookupService>();
 

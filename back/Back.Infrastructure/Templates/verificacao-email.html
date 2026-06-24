@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Confirme seu e-mail — hora mais</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style>
+    /* ── Resets ── */
+    html,body{margin:0!important;padding:0!important;width:100%!important}
+    *{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;box-sizing:border-box}
+    div[style*="margin: 16px 0"]{margin:0!important}
+    table,td{mso-table-lspace:0pt!important;mso-table-rspace:0pt!important}
+    table{border-collapse:collapse!important}
+    img{-ms-interpolation-mode:bicubic;border:0;height:auto;line-height:100%;outline:none;text-decoration:none;display:block}
+    a{text-decoration:none}
+
+    /* ── Shell ── */
+    body{
+      background-color:#060d1a;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    }
+    .shell{
+      background-color:#060d1a;
+      background-image:
+        radial-gradient(ellipse 900px 500px at 80% -5%,  rgba(14,165,233,.22) 0%,transparent 65%),
+        radial-gradient(ellipse 700px 400px at -5% 90%,  rgba(34,211,238,.14) 0%,transparent 60%),
+        radial-gradient(ellipse 400px 300px at 50% 50%,  rgba(15,23,42,1)     0%,transparent 100%);
+      padding:40px 16px 56px;
+    }
+
+    /* ── Card ── */
+    .card{
+      max-width:620px;
+      margin:0 auto;
+      background:#ffffff;
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:
+        0 0 0 1px rgba(14,165,233,.18),
+        0 32px 80px rgba(2,8,23,.55),
+        0  8px 24px rgba(2,8,23,.35);
+    }
+
+    /* ── Header ── */
+    .hd{
+      position:relative;
+      background:linear-gradient(145deg,#0c1f35 0%,#0d2440 40%,#0a1e36 100%);
+      overflow:hidden;
+    }
+    .hd-glow-top{
+      position:absolute;top:-80px;right:-40px;
+      width:300px;height:300px;
+      background:radial-gradient(circle,rgba(14,165,233,.3) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .hd-glow-left{
+      position:absolute;bottom:-60px;left:-40px;
+      width:240px;height:240px;
+      background:radial-gradient(circle,rgba(34,211,238,.18) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .hd-line{
+      height:3px;
+      background:linear-gradient(90deg,#0ea5e9,#22d3ee,#38bdf8);
+    }
+    .hd-inner{
+      position:relative;
+      padding:36px 40px 32px;
+      z-index:1;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      background:rgba(14,165,233,.12);
+      border:1px solid rgba(14,165,233,.25);
+      border-radius:100px;
+      padding:5px 14px 5px 10px;
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:.6px;
+      color:#7dd3fc;
+      text-transform:uppercase;
+      margin-bottom:22px;
+    }
+    .badge-dot{
+      width:7px;height:7px;
+      border-radius:50%;
+      background:#38bdf8;
+      box-shadow:0 0 6px #38bdf8;
+    }
+    .hd-icon-wrap{
+      width:64px;height:64px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#0ea5e9,#22d3ee);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 24px rgba(14,165,233,.35);
+      margin-bottom:20px;
+    }
+    .hd-title{
+      margin:0 0 8px;
+      font-size:26px;
+      font-weight:800;
+      color:#f0f9ff;
+      line-height:1.25;
+      letter-spacing:-.3px;
+    }
+    .hd-sub{
+      margin:0;
+      font-size:14px;
+      color:#7dd3fc;
+      opacity:.85;
+      font-weight:400;
+    }
+
+    /* ── Body ── */
+    .body{padding:36px 40px}
+
+    /* ── Text ── */
+    .greeting{font-size:17px;color:#0f172a;font-weight:600;margin:0 0 10px}
+    .body-text{font-size:15px;color:#475569;line-height:1.65;margin:0 0 28px}
+
+    /* ── Code box ── */
+    .code-outer{
+      background:linear-gradient(160deg,#060d1a 0%,#0d1f35 100%);
+      border-radius:16px;
+      padding:28px 24px;
+      text-align:center;
+      border:1px solid rgba(14,165,233,.15);
+      box-shadow:
+        0 0 0 1px rgba(14,165,233,.08),
+        0 16px 48px rgba(2,8,23,.5),
+        inset 0 1px 0 rgba(255,255,255,.04);
+      margin:0 0 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .code-outer::before{
+      content:'';
+      position:absolute;
+      top:-80px;left:50%;transform:translateX(-50%);
+      width:300px;height:200px;
+      background:radial-gradient(ellipse,rgba(14,165,233,.15) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .code-label{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      color:#475569;
+      margin:0 0 16px;
+    }
+    .code-digits{
+      display:inline-flex;
+      gap:6px;
+      background:rgba(14,165,233,.06);
+      border:1px solid rgba(14,165,233,.2);
+      border-radius:12px;
+      padding:14px 20px;
+      box-shadow:0 0 32px rgba(14,165,233,.15),inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .code-digit{
+      font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+      font-size:32px;
+      font-weight:800;
+      color:#e2f4ff;
+      line-height:1;
+      text-shadow:0 0 20px rgba(14,165,233,.6),0 0 40px rgba(14,165,233,.3);
+      letter-spacing:0;
+      min-width:24px;
+      text-align:center;
+    }
+    .code-separator{
+      font-size:32px;
+      color:rgba(14,165,233,.3);
+      line-height:1;
+      align-self:center;
+    }
+    .code-timer{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      color:#64748b;
+      margin-top:14px;
+      font-weight:500;
+    }
+
+    /* ── Expiry bar ── */
+    .expiry-bar{
+      height:3px;
+      background:linear-gradient(90deg,#0ea5e9,#22d3ee,#38bdf8);
+      border-radius:0 0 4px 4px;
+      margin:0 0 28px;
+      opacity:.7;
+    }
+
+    /* ── Warning ── */
+    .warning{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      border-radius:12px;
+      padding:14px 16px;
+      margin:0 0 28px;
+    }
+    .warning-icon{flex-shrink:0;margin-top:1px}
+    .warning-text{font-size:13px;color:#9a3412;line-height:1.55;font-weight:500}
+
+    /* ── Divider ── */
+    .divider{height:1px;background:linear-gradient(90deg,transparent,#e2e8f0,transparent);margin:0 0 24px}
+
+    /* ── Disclaimer ── */
+    .disclaimer{font-size:13px;color:#94a3b8;line-height:1.6;margin:0}
+
+    /* ── Footer ── */
+    .ft{
+      background:#f8fafc;
+      border-top:1px solid #f1f5f9;
+      padding:20px 40px 28px;
+      text-align:center;
+    }
+    .ft-logo{font-size:13px;font-weight:700;color:#64748b;letter-spacing:.5px;margin:0 0 6px}
+    .ft-copy{font-size:11px;color:#cbd5e1;margin:0}
+
+    /* ── Dark mode ── */
+    @media(prefers-color-scheme:dark){
+      .card{background:#0b1829}
+      .body{background:#0b1829}
+      .greeting{color:#e2e8f0}
+      .body-text{color:#94a3b8}
+      .warning{background:#1c0700;border-color:#7c2d12;color:#fb923c}
+      .warning-text{color:#fb923c}
+      .divider{background:linear-gradient(90deg,transparent,#1e293b,transparent)}
+      .disclaimer{color:#475569}
+      .ft{background:#060d1a;border-top-color:#0f1e30}
+      .ft-logo{color:#334155}
+      .ft-copy{color:#1e293b}
+    }
+
+    /* ── Mobile ── */
+    @media screen and (max-width:600px){
+      .shell{padding:20px 8px 40px}
+      .hd-inner{padding:28px 24px 24px}
+      .body{padding:28px 24px}
+      .hd-title{font-size:22px}
+      .code-digit{font-size:26px;min-width:18px}
+      .code-digits{padding:12px 14px;gap:4px}
+      .ft{padding:18px 24px 24px}
+    }
+  </style>
+</head>
+<body>
+  <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background-color:#060d1a"><tr><td><![endif]-->
+  <div class="shell">
+
+    <!-- Card -->
+    <div class="card">
+
+      <!-- Header -->
+      <div class="hd">
+        <div class="hd-line"></div>
+        <div class="hd-glow-top"></div>
+        <div class="hd-glow-left"></div>
+        <div class="hd-inner">
+
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Confirmação de Cadastro
+          </div>
+
+          <!-- Icon: Envelope check -->
+          <div class="hd-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="5" y="7" width="22" height="16" rx="2.5" fill="white" fill-opacity="0.9"/>
+              <path d="M6 9L16 16L26 9" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12.5 18.5L14.9 20.9L19.5 16" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <h1 class="hd-title">Confirme seu e-mail</h1>
+          <p class="hd-sub">Use o código abaixo para ativar sua conta e começar a usar o hora mais</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="body">
+
+        <p class="greeting">Olá, {{NOME}}!</p>
+        <p class="body-text">Seu cadastro no <strong>hora mais</strong> foi iniciado. Para ativar a sua conta e poder acessar o sistema, insira o código abaixo na tela de verificação.</p>
+
+        <!-- Code box -->
+        <div class="code-outer">
+          <p class="code-label">Código de verificação</p>
+          <div class="code-digits">
+            <span class="code-digit">{{D1}}</span>
+            <span class="code-digit">{{D2}}</span>
+            <span class="code-digit">{{D3}}</span>
+            <span class="code-separator">&thinsp;&middot;&thinsp;</span>
+            <span class="code-digit">{{D4}}</span>
+            <span class="code-digit">{{D5}}</span>
+            <span class="code-digit">{{D6}}</span>
+          </div>
+          <div class="code-timer">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="6.5" cy="6.5" r="5.5" stroke="#64748b" stroke-width="1.2"/>
+              <path d="M6.5 3.5V6.5L8.5 8" stroke="#64748b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Expira em <strong style="color:#475569">24 horas</strong>
+          </div>
+        </div>
+        <div class="expiry-bar"></div>
+
+        <!-- Warning -->
+        <div class="warning">
+          <div class="warning-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 1.5L16.5 15H1.5L9 1.5Z" stroke="#f97316" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M9 7V10.5" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="9" cy="13" r="0.75" fill="#f97316"/>
+            </svg>
+          </div>
+          <div class="warning-text">
+            Por segurança, <strong>nunca compartilhe este código</strong> com ninguém. A equipe hora mais jamais solicitará seu código por telefone ou mensagem.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="disclaimer">Não realizou este cadastro? Ignore este e-mail — nenhuma conta será ativada sem a confirmação deste código.</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="ft">
+        <p class="ft-logo">hora mais &mdash; Sistema de Horas Discentes</p>
+        <p class="ft-copy">E-mail automático &middot; Não responda &middot; &copy; {{ANO}} IFPE &middot; Todos os direitos reservados</p>
+      </div>
+
+    </div>
+    <!-- /Card -->
+
+  </div>
+  <!--[if mso | IE]></td></tr></table><![endif]-->
+</body>
+</html>

@@ -35,6 +35,23 @@ public class EmailTemplateService : IEmailTemplateService
             .Replace("{{ANO}}", DateTime.UtcNow.Year.ToString());
     }
 
+    public string RenderVerificacaoEmail(string nome, string codigo)
+    {
+        // Garante 6 dígitos mesmo que o código tenha zeros à esquerda
+        var digits = codigo.PadLeft(6, '0');
+
+        var template = LoadTemplate("verificacao-email.html");
+        return template
+            .Replace("{{NOME}}", WebUtility.HtmlEncode(nome))
+            .Replace("{{D1}}", digits[0].ToString())
+            .Replace("{{D2}}", digits[1].ToString())
+            .Replace("{{D3}}", digits[2].ToString())
+            .Replace("{{D4}}", digits[3].ToString())
+            .Replace("{{D5}}", digits[4].ToString())
+            .Replace("{{D6}}", digits[5].ToString())
+            .Replace("{{ANO}}", DateTime.UtcNow.Year.ToString());
+    }
+
     public string RenderLembretePendencia(string nome, string mensagem)
     {
         var template = LoadTemplate("lembrete-pendencia.html");

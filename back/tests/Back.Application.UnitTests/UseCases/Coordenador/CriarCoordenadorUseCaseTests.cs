@@ -32,7 +32,7 @@ public class CriarCoordenadorUseCaseTests
 
         conviteRepo.Setup(r => r.GetValidByTokenAsync(token))
             .ReturnsAsync(convite);
-        identity.Setup(i => i.CreateUserAsync("coordenador@ifpe.edu.br", "Senha@123", "COORDENADOR"))
+        identity.Setup(i => i.CreateUserAsync("coordenador@ifpe.edu.br", "Senha@123", "COORDENADOR", true))
             .ReturnsAsync((true, "user-id", Array.Empty<string>()));
 
         var useCase = new CriarCoordenadorUseCase(
@@ -76,7 +76,7 @@ public class CriarCoordenadorUseCaseTests
 
         conviteRepo.Setup(r => r.GetValidByTokenAsync(token))
             .ReturnsAsync(convite);
-        identity.Setup(i => i.CreateUserAsync(email, "Senha@123", "COORDENADOR"))
+        identity.Setup(i => i.CreateUserAsync(email, "Senha@123", "COORDENADOR", true))
             .ReturnsAsync((true, "user-id", Array.Empty<string>()));
 
         var useCase = new CriarCoordenadorUseCase(

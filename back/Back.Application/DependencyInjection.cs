@@ -61,6 +61,8 @@ public static class DependencyInjection
         services.AddScoped<ForgotPasswordUseCase>();
         services.AddScoped<ValidateResetCodeUseCase>();
         services.AddScoped<ResetPasswordUseCase>();
+        services.AddScoped<ConfirmarEmailUseCase>();
+        services.AddScoped<ReenviarVerificacaoUseCase>();
 
         //coordenador
         services.AddScoped<EnviarConviteUseCase>();
