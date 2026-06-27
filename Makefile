@@ -2,13 +2,14 @@
 
 FRONT_DIR ?= front
 DOCKER_COMPOSE ?= docker compose
-DOCKER_COMPOSE_FILE ?= docker-compose.yml
+DOCKER_COMPOSE_FILE ?= docker-compose.dev.yml
+PROD_DOCKER_COMPOSE_FILE ?= docker-compose.yml
 LOG_DIR ?= .logs
 LOG_DIR_ABS := $(abspath $(LOG_DIR))
 FRONT_BUILD_LOG ?= $(LOG_DIR)/frontend-build.log
 ENV_FILE ?= .env
 
-.PHONY: frontend-build check up docker-up docker-down clean-logs db-up wait-db backend-seed
+.PHONY: frontend-build check up docker-up docker-down prod-pull prod-up prod-down clean-logs db-up wait-db backend-seed
 
 check: frontend-build
 
@@ -30,6 +31,12 @@ backend-seed:
 docker-up:
 	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
 
+prod-pull:
+	$(DOCKER_COMPOSE) -f $(PROD_DOCKER_COMPOSE_FILE) pull
+
+prod-up:
+	$(DOCKER_COMPOSE) -f $(PROD_DOCKER_COMPOSE_FILE) up -d --pull always
+
 up:
 	$(MAKE) frontend-build
 	$(MAKE) db-up
@@ -39,6 +46,9 @@ up:
 
 docker-down:
 	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
+
+prod-down:
+	$(DOCKER_COMPOSE) -f $(PROD_DOCKER_COMPOSE_FILE) down
 
 clean-logs:
 	powershell.exe -NoLogo -NoProfile -Command "If (Test-Path '$(LOG_DIR_ABS)') { Remove-Item '$(LOG_DIR_ABS)' -Recurse -Force }"

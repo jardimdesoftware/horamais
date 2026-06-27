@@ -1,9 +1,11 @@
 services:
   frontend:
-    image: ghcr.io/ifpebj-ti/horas-discentes-frontend:latest
+    image: "ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-frontend:latest"
+    pull_policy: always
     ports:
       - "${PORT_MACHINE_FRONTEND}:3000"
     environment:
+      - INTERNAL_API_URL=http://backend:5000/api
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
@@ -14,10 +16,12 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ghcr.io/ifpebj-ti/horas-discentes-backend:latest
+    image: "ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-backend:latest"
+    pull_policy: always
     ports:
       - "${PORT_MACHINE_BACKEND}:5000"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=${DATABASE_URL}
       - JWT__Key=${JWT__Key}
@@ -26,6 +30,13 @@ services:
       - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - COORD_EMAIL=${COORD_EMAIL}
+      - COORD_PASSWORD=${COORD_PASSWORD}
+      - COORD_NOME=${COORD_NOME}
+      - COORD_PORTARIA=${COORD_PORTARIA}
+      - COORD_DOU=${COORD_DOU}
+      - CURSO_NOME=${CURSO_NOME}
+      - CURSO_MAX_HORAS_COMPLEMENTAR=${CURSO_MAX_HORAS_COMPLEMENTAR:-120}
       - EMAIL__Remetente=${EMAIL__Remetente}
       - EMAIL__Senha=${EMAIL__Senha}
       - EMAIL__Smtp=${EMAIL__Smtp}

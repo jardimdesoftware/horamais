@@ -18,7 +18,15 @@ RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 #Versionamento no runtime
 ARG VERSION=dev
+ARG REVISION=local
+ARG BUILDTIME=dev
 ENV APP_VERSION=$VERSION
+ENV APP_REVISION=$REVISION
+ENV APP_BUILDTIME=$BUILDTIME
+
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.revision=$REVISION
+LABEL org.opencontainers.image.created=$BUILDTIME
 
 COPY --from=build /app/publish .
 
