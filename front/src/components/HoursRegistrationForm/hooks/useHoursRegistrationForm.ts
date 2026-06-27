@@ -2,7 +2,7 @@ import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 import { HoursRegistrationFormSchema } from '@components/HoursRegistrationForm/schemas/hoursRegistrationFormSchema';
@@ -51,13 +51,12 @@ export function useHoursRegistrationForm({
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting }
   } = form;
 
-  const anexoComprovante = watch('anexoComprovante');
-  const categoriaWatched = watch('categoria');
-  const periodoWatched = watch('periodoLetivoFaculdade');
+  const anexoComprovante = useWatch({ control, name: 'anexoComprovante' });
+  const categoriaWatched = useWatch({ control, name: 'categoria' });
+  const periodoWatched = useWatch({ control, name: 'periodoLetivoFaculdade' });
 
   const categoriasAtuais = useMemo(() => {
     return tipoRegistro === 'horas-extensao'
