@@ -15,24 +15,28 @@
 
 	<ItemGroup>
   	<PackageReference Include="AutoMapper" Version="16.1.1" />
-		<PackageReference Include="AWSSDK.S3" Version="4.0.20.2" />
-		<PackageReference Include="MailKit" Version="4.16.0" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+		<PackageReference Include="AWSSDK.S3" Version="4.0.100.2" />
+		<PackageReference Include="MailKit" Version="4.17.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.11" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.11" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.17" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.9" />
+		<PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.9" />
 		<ProjectReference Include="..\Back.Application\Back.Application.csproj" />
 		<ProjectReference Include="..\Back.Domain\Back.Domain.csproj" />
-		<PackageReference Include="Google.Apis.Auth" Version="1.71.0" />
-		<PackageReference Include="Google.Apis.Gmail.v1" Version="1.70.0.3833" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.20" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.20" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.20">
+		<PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
+		<PackageReference Include="Google.Apis.Gmail.v1" Version="1.74.0.4162" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.17" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.17" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.20" />
-		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.20" />
-		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
-		<PackageReference Include="MimeKit" Version="4.16.0" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.28" />
+		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.9" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.19.1" />
+		<PackageReference Include="MimeKit" Version="4.17.0" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
 	</ItemGroup>
 
 </Project>
