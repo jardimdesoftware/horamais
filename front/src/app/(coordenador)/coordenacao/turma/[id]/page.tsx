@@ -132,7 +132,7 @@ const VisualizarTurma = () => {
         tituloAtividade: safeString(cert.titulo),
         titulo: safeString(cert.titulo),
         instituicao: safeString(cert.instituicao) || safeString(cert.local),
-        local: safeString(cert.local),
+        localRealizacao: safeString(cert.local),
         categoria: safeString(cert.categoria),
         periodoLetivo: safeString(cert.periodoLetivo),
         periodoLetivoFaculdade: safeString(cert.periodoLetivo),
