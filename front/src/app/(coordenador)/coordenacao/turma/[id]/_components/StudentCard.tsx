@@ -2,6 +2,7 @@ import {
   FaBookOpen,
   FaCheckCircle,
   FaDownload,
+  FaFilePdf,
   FaHandsHelping,
   FaTimesCircle,
   FaUser
@@ -24,7 +25,9 @@ interface StudentCardProps {
     studentId: string,
     categoria: 'complementar' | 'extensao'
   ) => void;
+  onGenerateSummary: (studentId: string) => void;
   isDownloading?: boolean;
+  isGeneratingSummary?: boolean;
 }
 
 export const StudentCard = ({
@@ -32,7 +35,9 @@ export const StudentCard = ({
   turma,
   onToggleStatus,
   onDownload,
-  isDownloading = false
+  onGenerateSummary,
+  isDownloading = false,
+  isGeneratingSummary = false
 }: StudentCardProps) => {
   const complementarConcluido =
     student.maximoHorasComplementar > 0 &&
@@ -89,6 +94,17 @@ export const StudentCard = ({
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onGenerateSummary(student.id)}
+            disabled={isGeneratingSummary}
+            title="Gerar resumo em PDF para repasse à secretaria"
+            className="text-gray-700 border-gray-300 hover:bg-gray-50 cursor-pointer"
+          >
+            <FaFilePdf className="w-3 h-3 mr-1" />
+            Resumo
+          </Button>
           {complementarConcluido && (
             <Button
               variant="outline"

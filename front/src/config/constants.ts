@@ -5,3 +5,9 @@ export const CONSTANTS = {
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
   PAGINATION_LIMIT: 10
 };
+
+export const TURNO_LABELS: Record<string, string> = {
+  manha: 'Manhã',
+  tarde: 'Tarde',
+  noite: 'Noite'
+};
