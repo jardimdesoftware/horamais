@@ -51,6 +51,8 @@ function copyResponseHeaders(response: Response) {
   return headers;
 }
 
+const NULL_BODY_STATUSES = new Set([101, 103, 204, 205, 304]);
+
 async function proxy(request: Request, context: RouteContext) {
   const { path } = await context.params;
   const method = request.method.toUpperCase();
@@ -67,7 +69,14 @@ async function proxy(request: Request, context: RouteContext) {
 
   const response = await fetch(buildTargetUrl(path, request), requestInit);
 
-  return new Response(await response.arrayBuffer(), {
+  // Respostas com status "null-body" (204/205/304) não podem ter body:
+  // o construtor de Response lança TypeError se receber um ArrayBuffer aqui,
+  // mesmo vazio.
+  const body = NULL_BODY_STATUSES.has(response.status)
+    ? null
+    : await response.arrayBuffer();
+
+  return new Response(body, {
     status: response.status,
     statusText: response.statusText,
     headers: copyResponseHeaders(response)
