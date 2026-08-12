@@ -1,5 +1,12 @@
 node_modules
+.next
+out
+coverage
+.turbo
+.cache
 npm-debug.log
+yarn-error.log
+.env*.local
 Dockerfile
 .dockerignore
 .git
