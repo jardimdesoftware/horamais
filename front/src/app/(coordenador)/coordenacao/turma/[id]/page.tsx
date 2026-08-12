@@ -18,6 +18,8 @@ import {
   CardTitle
 } from '@/components/ui/card';
 
+import { TURNO_LABELS } from '@/config/constants';
+import { useStudentSummaryPdf } from '@/hooks/useStudentSummaryPdf';
 import {
   useAlunosPorTurma,
   useTurma,
@@ -41,12 +43,6 @@ import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import PizZip from 'pizzip';
 
-const turnoLabel: Record<string, string> = {
-  manha: 'Manhã',
-  tarde: 'Tarde',
-  noite: 'Noite'
-};
-
 const VisualizarTurma = () => {
   const { id } = useParams();
   const turmaId = id as string;
@@ -54,6 +50,9 @@ const VisualizarTurma = () => {
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const { gerarResumo, isGenerating: isGeneratingSummary } =
+    useStudentSummaryPdf();
 
   const { data: turma, isLoading: isLoadingTurma } = useTurma(turmaId);
   const {
@@ -195,6 +194,20 @@ const VisualizarTurma = () => {
     }
   };
 
+  const handleGerarResumo = async (studentId: string) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student || !turma) return;
+
+    try {
+      await gerarResumo({ student, turma, coordenador });
+      toast.success(`Resumo de ${student.nome} gerado com sucesso.`);
+    } catch (error) {
+      toast.error(
+        extractApiError(error, 'Não foi possível gerar o resumo do aluno.')
+      );
+    }
+  };
+
   return (
     <div className="space-y-8 p-4 md:p-6">
       <LoadingOverlay
@@ -202,7 +215,8 @@ const VisualizarTurma = () => {
           isLoadingTurma ||
           isLoadingAlunos ||
           toggleStatusMutation.isPending ||
-          isDownloading
+          isDownloading ||
+          isGeneratingSummary
         }
       />
 
@@ -245,7 +259,7 @@ const VisualizarTurma = () => {
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-600">Turno</p>
                 <p className="text-lg font-bold text-gray-900">
-                  {turnoLabel[turma.turno] ?? turma.turno}
+                  {TURNO_LABELS[turma.turno] ?? turma.turno}
                 </p>
               </div>
             </CardContent>
@@ -279,7 +293,9 @@ const VisualizarTurma = () => {
                     turma={turma}
                     onToggleStatus={toggleStudentStatus}
                     onDownload={handleDownload}
+                    onGenerateSummary={handleGerarResumo}
                     isDownloading={isDownloading}
+                    isGeneratingSummary={isGeneratingSummary}
                   />
                 ))}
             </CardContent>
