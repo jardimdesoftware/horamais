@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-  	<PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.3" />
+  	<PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.4" />
 		<ProjectReference Include="..\Back.Domain\Back.Domain.csproj" />
 		<PackageReference Include="AutoMapper" Version="16.1.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
