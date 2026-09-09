@@ -28,12 +28,20 @@ beforeEach(() => {
 });
 
 test('novo discente segue ao cadastro sem criar sessão ou receber token', async () => {
-  post.mockResolvedValue({ data: {
-    requiresRegistration: true, nome: 'Aluno Teste',
-    email: 'aluno@discente.ifpe.edu.br', role: null, token: null
-  } });
+  post.mockResolvedValue({
+    data: {
+      requiresRegistration: true,
+      nome: 'Aluno Teste',
+      email: 'aluno@discente.ifpe.edu.br',
+      role: null,
+      token: null
+    }
+  });
   const user = {};
-  const result = await auth.callbacks.signIn({ account: { provider: 'google', id_token: 'test' }, user });
+  const result = await auth.callbacks.signIn({
+    account: { provider: 'google', id_token: 'test' },
+    user
+  });
   const redirect = new URL(result, 'http://localhost:3000');
   expect(redirect.pathname).toBe('/primeiroAcesso');
   expect(redirect.searchParams.get('email')).toBe('aluno@discente.ifpe.edu.br');
@@ -41,25 +49,53 @@ test('novo discente segue ao cadastro sem criar sessão ou receber token', async
 });
 
 test('conta cadastrada recebe o token e perfil do backend', async () => {
-  post.mockResolvedValue({ data: { nome: 'Aluno', email: 'a@discente.ifpe.edu.br', role: 'ALUNO', token: 'backend-token', requiresRegistration: false } });
+  post.mockResolvedValue({
+    data: {
+      nome: 'Aluno',
+      email: 'a@discente.ifpe.edu.br',
+      role: 'ALUNO',
+      token: 'backend-token',
+      requiresRegistration: false
+    }
+  });
   const user = {};
-  expect(await auth.callbacks.signIn({ account: { provider: 'google' }, user })).toBe(true);
+  expect(
+    await auth.callbacks.signIn({ account: { provider: 'google' }, user })
+  ).toBe(true);
   expect(user.accessToken).toBe('backend-token');
   expect(user.role).toBe('aluno');
 });
 
 test('domínio recusado redireciona para a tela de e-mail institucional', async () => {
-  post.mockRejectedValue({ isAxiosError: true, response: { status: 400, data: { message: 'O primeiro acesso com Google exige um e-mail @discente.ifpe.edu.br.' } } });
-  expect(await auth.callbacks.signIn({ account: { provider: 'google' }, user: {} })).toBe('/email-institucional');
+  post.mockRejectedValue({
+    isAxiosError: true,
+    response: {
+      status: 400,
+      data: {
+        message:
+          'O primeiro acesso com Google exige um e-mail @discente.ifpe.edu.br.'
+      }
+    }
+  });
+  expect(
+    await auth.callbacks.signIn({ account: { provider: 'google' }, user: {} })
+  ).toBe('/email-institucional');
   expect(auth.pages.error).toBe('/');
 });
 
 test('falha de rede não concede acesso', async () => {
   post.mockRejectedValue({ isAxiosError: true, code: 'ECONNREFUSED' });
-  expect(await auth.callbacks.signIn({ account: { provider: 'google' }, user: {} })).toBe('/?error=GoogleLoginFailed');
+  expect(
+    await auth.callbacks.signIn({ account: { provider: 'google' }, user: {} })
+  ).toBe('/?error=GoogleLoginFailed');
 });
 
 test('login por senha continua independente do Google', async () => {
-  expect(await auth.callbacks.signIn({ account: { provider: 'credentials' }, user: {} })).toBe(true);
+  expect(
+    await auth.callbacks.signIn({
+      account: { provider: 'credentials' },
+      user: {}
+    })
+  ).toBe(true);
   expect(post).not.toHaveBeenCalled();
 });
