@@ -1,5 +1,10 @@
+# npm atualizado inclui a correção de segurança do node-tar.
+FROM node:22-alpine AS base
+RUN npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund \
+    && npm cache clean --force
+
 # Etapa de build
-FROM node:22-alpine AS builder
+FROM base AS builder
 WORKDIR /app
 
 # Versionamento
@@ -21,12 +26,12 @@ ENV NEXT_PUBLIC_BUILDTIME=${NEXT_PUBLIC_BUILDTIME:-$BUILDTIME}
 
 # Dependências e build
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
 # Etapa de produção
-FROM node:22-alpine AS production
+FROM base AS production
 WORKDIR /app
 
 # Atualiza pacotes do sistema para corrigir CVEs (ex: zlib CVE-2026-22184)
