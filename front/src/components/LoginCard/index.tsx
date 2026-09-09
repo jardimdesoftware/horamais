@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { FaCircleNotch } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,8 @@ export const LoginCard = () => {
   useRedirectIfAuthenticated();
   const {
     form: { register, handleSubmit, formState, watch },
-    submitForm
+    submitForm,
+    submitGoogle
   } = useLoginCard();
 
   const { errors } = formState;
@@ -114,7 +116,23 @@ export const LoginCard = () => {
             </Button>
           </div>
 
-          <hr className="my-6 border-t-2 border-gray-300 rounded-2xl" />
+          <div className="flex items-center my-6">
+            <hr className="flex-grow border-t-2 border-gray-300" />
+            <span className="px-3 text-sm text-gray-500">ou</span>
+            <hr className="flex-grow border-t-2 border-gray-300" />
+          </div>
+
+          <div className="w-full mb-6">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={submitGoogle}
+            >
+              <FcGoogle className="h-5 w-5" />
+              Entrar com Google
+            </Button>
+          </div>
 
           <div className="text-center">
             <a

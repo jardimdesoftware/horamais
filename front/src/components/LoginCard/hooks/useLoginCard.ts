@@ -1,7 +1,8 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
@@ -11,6 +12,7 @@ import { loginSchema, type LoginSchemaType } from '../schemas/schema';
 
 export function useLoginCard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
@@ -19,6 +21,30 @@ export function useLoginCard() {
       password: ''
     }
   });
+
+  // Exibe apenas mensagens conhecidas, sem renderizar texto recebido pela URL.
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      const messages: Record<string, string> = {
+        GoogleDomainNotAllowed:
+          'Para criar sua conta com Google, use o e-mail @discente.ifpe.edu.br.',
+        GoogleAccountNotFound:
+          'Nenhuma conta encontrada para este e-mail. Cadastre-se no HoraMais com o mesmo e-mail da conta Google antes de entrar.',
+        GoogleEmailNotConfirmed:
+          'Confirme seu cadastro com o código enviado por e-mail antes de entrar com o Google.',
+        GoogleAccountInactive:
+          'Sua conta está inativa. Entre em contato com a coordenação.',
+        GoogleTokenInvalid:
+          'Não foi possível validar o login com o Google. Tente novamente.'
+      };
+      toast.error(
+        messages[error] ??
+          'Não foi possível entrar com o Google. Tente novamente em instantes.'
+      );
+      router.replace('/');
+    }
+  }, [searchParams, router]);
 
   const submitForm: SubmitHandler<LoginSchemaType> = async (data) => {
     const res = await signIn('credentials', {
@@ -53,8 +79,13 @@ export function useLoginCard() {
     }
   };
 
+  const submitGoogle = () => {
+    signIn('google', { callbackUrl: '/' });
+  };
+
   return {
     form,
-    submitForm
+    submitForm,
+    submitGoogle
   };
 }

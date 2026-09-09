@@ -1,6 +1,7 @@
 ﻿using Back.Application.DTOs.Auth;
 using Back.Application.Interfaces.Identity;
 using Back.Infrastructure.Persistence.Context;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +41,45 @@ public class AuthService : IAuthService
         if (!identityUser.EmailConfirmed)
             throw new UnauthorizedAccessException("E-mail não verificado. Verifique sua caixa de entrada para confirmar o código de cadastro.");
 
+        return await BuildLoginResponseAsync(identityUser);
+    }
+
+    public async Task<GoogleLoginResponseDto> LoginWithGoogleAsync(GoogleLoginRequestDto dto)
+    {
+        var clientId = _config["Authentication:Google:ClientId"];
+        if (string.IsNullOrWhiteSpace(clientId))
+            throw new UnauthorizedAccessException("Login com Google não configurado.");
+
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { clientId }
+            };
+            payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, settings);
+        }
+        catch (Exception)
+        {
+            throw new UnauthorizedAccessException("Token do Google inválido ou expirado.");
+        }
+
+        if (!payload.EmailVerified)
+            throw new UnauthorizedAccessException("E-mail do Google não verificado.");
+
+        var identityUser = await _userManager.FindByEmailAsync(payload.Email);
+        if (identityUser == null)
+            return GoogleLoginResponseDto.ForFirstAccess(payload.Name, payload.Email);
+
+        if (!identityUser.EmailConfirmed)
+            throw new UnauthorizedAccessException("E-mail não verificado. Verifique sua caixa de entrada para confirmar o código de cadastro.");
+
+        var login = await BuildLoginResponseAsync(identityUser);
+        return new GoogleLoginResponseDto(login.Nome, login.Email, login.Role, login.Token);
+    }
+
+    private async Task<LoginResponseDto> BuildLoginResponseAsync(IdentityUser identityUser)
+    {
         var roles = await _userManager.GetRolesAsync(identityUser);
         var role = roles.FirstOrDefault() ?? throw new UnauthorizedAccessException("Usuário sem perfil.");
 

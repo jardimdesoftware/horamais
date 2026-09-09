@@ -1,5 +1,5 @@
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
@@ -13,6 +13,8 @@ import { firstAccessSchema, FirstAccessSchema } from '../schemas/schema';
 
 export const useFirstAccess = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isGoogleFirstAccess = searchParams.get('google') === '1';
 
   const [step, setStep] = useState(1);
   const [codigo, setCodigo] = useState('');
@@ -32,6 +34,13 @@ export const useFirstAccess = () => {
     resolver: zodResolver(firstAccessSchema),
     mode: 'onChange'
   });
+
+  useEffect(() => {
+    if (!isGoogleFirstAccess) return;
+    // Dados da URL são apenas sugestões; o cadastro mantém a confirmação por e-mail.
+    form.setValue('email', searchParams.get('email') ?? '');
+    form.setValue('nome', searchParams.get('nome') ?? '');
+  }, [form, isGoogleFirstAccess, searchParams]);
 
   const handleValidarCodigo = async () => {
     try {
@@ -112,6 +121,7 @@ export const useFirstAccess = () => {
   };
 
   return {
+    isGoogleFirstAccess,
     step,
     setStep,
     codigo,

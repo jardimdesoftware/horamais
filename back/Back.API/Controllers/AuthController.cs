@@ -15,6 +15,7 @@ namespace Back.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly LoginUseCase _loginUseCase;
+    private readonly GoogleLoginUseCase _googleLoginUseCase;
     private readonly ForgotPasswordUseCase _forgotPasswordUseCase;
     private readonly ValidateResetCodeUseCase _validateResetCodeUseCase;
     private readonly ResetPasswordUseCase _resetPasswordUseCase;
@@ -23,6 +24,7 @@ public class AuthController : ControllerBase
 
     public AuthController(
         LoginUseCase loginUseCase,
+        GoogleLoginUseCase googleLoginUseCase,
         ForgotPasswordUseCase forgotPasswordUseCase,
         ValidateResetCodeUseCase validateResetCodeUseCase,
         ResetPasswordUseCase resetPasswordUseCase,
@@ -30,6 +32,7 @@ public class AuthController : ControllerBase
         ReenviarVerificacaoUseCase reenviarVerificacaoUseCase)
     {
         _loginUseCase = loginUseCase;
+        _googleLoginUseCase = googleLoginUseCase;
         _forgotPasswordUseCase = forgotPasswordUseCase;
         _validateResetCodeUseCase = validateResetCodeUseCase;
         _resetPasswordUseCase = resetPasswordUseCase;
@@ -46,6 +49,23 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _loginUseCase.ExecuteAsync(dto);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("google-login")]
+    [ProducesResponseType(typeof(GoogleLoginResponseDto), 200)]
+    [ProducesResponseType(400)]
+    [SwaggerOperation(Summary = "Autenticar usuário via Google", Description = "Autentica contas cadastradas ou encaminha novos discentes ao primeiro acesso, sem emitir token antes do cadastro.")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequestDto dto)
+    {
+        try
+        {
+            var result = await _googleLoginUseCase.ExecuteAsync(dto);
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)

@@ -16,6 +16,7 @@ import { useFirstAccess } from './hooks/useFirstAccess';
 
 export const FirstAccess = () => {
   const {
+    isGoogleFirstAccess,
     step,
     codigo,
     setCodigo,
@@ -57,6 +58,14 @@ export const FirstAccess = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-center text-[#1351B4] mb-6">
             Primeiro Acesso
           </h1>
+
+          {isGoogleFirstAccess && step < 3 && (
+            <p className="text-sm text-gray-700 mb-4 text-center">
+              Complete seu cadastro para acessar o HoraMais. Informe o código da
+              turma, sua matrícula e crie uma senha. Depois de confirmar o
+              e-mail, você poderá entrar com Google ou com e-mail e senha.
+            </p>
+          )}
 
           {step === 1 && (
             <form
