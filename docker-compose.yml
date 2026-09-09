@@ -9,6 +9,8 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     networks:
       - rede-back
     depends_on:
@@ -28,6 +30,7 @@ services:
       - JWT__Issuer=${JWT__Issuer}
       - JWT__Audience=${JWT__Audience}
       - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
+      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - COORD_EMAIL=${COORD_EMAIL}

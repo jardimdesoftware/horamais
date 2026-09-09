@@ -55,4 +55,16 @@ public class AuthEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task GoogleLogin_ComIdTokenInvalido_RetornaBadRequest()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/auth/google-login",
+            new { idToken = "token-invalido-de-teste" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
