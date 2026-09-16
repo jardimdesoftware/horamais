@@ -133,15 +133,6 @@ export const LoginCard = () => {
               Entrar com Google
             </Button>
           </div>
-
-          <div className="text-center">
-            <a
-              href="primeiroAcesso"
-              className="text-primary font-medium hover:underline"
-            >
-              Primeiro Acesso?
-            </a>
-          </div>
         </form>
       </div>
     </div>
