@@ -67,6 +67,32 @@ Esta aplicação permitirá que os estudantes cadastrem suas atividades extracur
 
 ## 📚 Documentação
 
+### Imagens Docker AMD64 e ARM64
+
+Os workflows de frontend e backend geram imagens para `linux/amd64` e
+`linux/arm64` em runners nativos. Cada imagem é verificada pelo Trivy antes de
+ser enviada ao GitHub Container Registry (GHCR). Após as duas arquiteturas
+passarem, o pipeline publica um manifest com a tag da versão e atualiza `latest`.
+O Docker seleciona automaticamente a arquitetura da máquina ao baixar a imagem.
+
+- Frontend: `ghcr.io/jardimdesoftware/horas-discentes-frontend:<versão>`
+- Backend: `ghcr.io/jardimdesoftware/horas-discentes-backend:<versão>`
+
+Para conferir as plataformas de uma versão publicada:
+
+```sh
+docker buildx imagetools inspect ghcr.io/jardimdesoftware/horas-discentes-frontend:latest
+docker buildx imagetools inspect ghcr.io/jardimdesoftware/horas-discentes-backend:latest
+```
+
+As tags `build-<run_id>-<tentativa>-amd64` e `build-<run_id>-<tentativa>-arm64`
+identificam as imagens intermediárias verificadas de cada execução. Use as tags
+de versão ou `latest` no deploy. ARM de 32 bits não está incluído.
+
+PRs executam os builds e scans das duas arquiteturas sem publicar imagens ou
+releases. A publicação acontece nos eventos de produção já configurados
+(`push` na `main`, PR integrado ou execução manual).
+
 A documentação do projeto está disponível na nossa [📖 Wiki](https://github.com/ifpebj-ti/horas-discentes/wiki), contendo:
 
 - 📌 Visão Geral do Projeto  
