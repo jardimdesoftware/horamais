@@ -12,6 +12,10 @@ on:
     branches:
       - main
     types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
       - closed
     paths:
       - "back/**"
@@ -30,6 +34,11 @@ on:
           - bug-fix
           - outros
 
+# Serializa publicações para evitar disputa pelas tags de versão e latest.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # --------------------------------------------------------------------
   # 0) TAG CREATION ----------------------------------------------------
@@ -37,7 +46,7 @@ jobs:
   tag-creation:
     name: 0. Automatic Creation Process of New Tags
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name != 'pull_request' || github.event.action != 'closed' || github.event.pull_request.merged == true
     permissions:
       contents: write
     outputs:
@@ -83,6 +92,7 @@ jobs:
           echo "change_type=$change_type" >> "$GITHUB_OUTPUT"
 
       - name: Get the last release tag
+        if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
         id: last_tag
         run: |
           gh auth setup-git
@@ -95,6 +105,12 @@ jobs:
       - name: Calculate new tag
         id: created_tag
         run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.merged }}" != "true" ]]; then
+            echo "created_tag=pr-${{ github.event.number }}-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "change_type=outros" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             change_type="${{ github.event.inputs.change_type }}"
           elif [[ "${{ github.event_name }}" == "push" ]]; then
@@ -127,7 +143,15 @@ jobs:
   # --------------------------------------------------------------------
   backend-docker:
     name: 1. Backend CI/CD
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
     needs: tag-creation
     env:
       CREATED_TAG: ${{ needs.tag-creation.outputs.created_tag }}
@@ -146,7 +170,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0"
 
@@ -160,41 +184,98 @@ jobs:
           cd back/Back.API
           dotnet build Back.sln --no-restore
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare image metadata
+        id: image
+        run: |
+          echo "ref=ghcr.io/${{ github.repository_owner }}/horas-discentes-backend:build-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
+          echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./back
+          file: ./back/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          load: true
+          push: false
+          tags: ${{ steps.image.outputs.ref }}
+          build-args: |
+            VERSION=${{ env.CREATED_TAG }}
+            REVISION=${{ github.sha }}
+            BUILDTIME=${{ steps.image.outputs.built_at }}
+          cache-from: type=gha,scope=backend-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=backend-${{ matrix.arch }}
+
+      - name: Verify image architecture
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: |
+          test "$(docker image inspect "$IMAGE_REF" --format '{{.Os}}/{{.Architecture}}')" = "linux/$EXPECTED_ARCH"
+
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.image.outputs.ref }}
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: CRITICAL
+        env:
+          TRIVY_IMAGE_SRC: docker
+
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Build Docker image
-        run: |
-          docker build \
-            --build-arg VERSION="$CREATED_TAG" \
-            --build-arg REVISION="${{ github.sha }}" \
-            --build-arg BUILDTIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            -t ghcr.io/${{ github.repository_owner }}/horas-discentes-backend:$CREATED_TAG \
-            -f back/Dockerfile ./back
+      - name: Push scanned image
+        if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: docker push "$IMAGE_REF"
 
-      - name: Trivy Scan
-        uses: aquasecurity/trivy-action@master
+  publish-manifest:
+    name: Publish AMD64 and ARM64 manifest
+    runs-on: ubuntu-latest
+    needs: [tag-creation, backend-docker]
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/horas-discentes-backend
+      CREATED_TAG: ${{ needs.tag-creation.outputs.created_tag }}
+      BUILD_TAG: build-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
-          format: table
-          exit-code: 1
-          ignore-unfixed: true 
-          severity: CRITICAL
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
 
-      - name: Tag image as latest
+      - name: Publish version manifest
         run: |
-          docker tag ghcr.io/${{ github.repository_owner }}/horas-discentes-backend:$CREATED_TAG \
-                     ghcr.io/${{ github.repository_owner }}/horas-discentes-backend:latest
+          docker buildx imagetools create --tag "$IMAGE:$CREATED_TAG" \
+            "$IMAGE:$BUILD_TAG-amd64" "$IMAGE:$BUILD_TAG-arm64"
 
-      - name: Push Docker images
+      - name: Verify published platforms
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/horas-discentes-backend:$CREATED_TAG
-          docker push ghcr.io/${{ github.repository_owner }}/horas-discentes-backend:latest
+          docker buildx imagetools inspect "$IMAGE:$CREATED_TAG" --raw | \
+            jq -e '[.manifests[].platform | .os + "/" + .architecture] | sort == ["linux/amd64", "linux/arm64"]'
 
+      - name: Promote verified manifest to latest
+        run: docker buildx imagetools create --tag "$IMAGE:latest" "$IMAGE:$CREATED_TAG"
 
   # --------------------------------------------------------------------
   # 3) RELEASE CREATION ------------------------------------------------
@@ -202,7 +283,7 @@ jobs:
   release-creation:
     name: 3. Automatic Creation Process of New Releases
     runs-on: ubuntu-latest
-    needs: [tag-creation, backend-docker]
+    needs: [tag-creation, publish-manifest]
     if: github.event_name == 'push' || github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
