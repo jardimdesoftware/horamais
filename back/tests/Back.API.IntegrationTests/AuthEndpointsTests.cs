@@ -67,4 +67,15 @@ public class AuthEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task GoogleRegister_SemTicketValido_RecusaCadastro()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.PostAsJsonAsync(
+            "/api/auth/google-register",
+            new { registrationTicket = "invalid", nome = "Aluno", matricula = "20231ewbj2157", turmaCodigo = "ADS2B7" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

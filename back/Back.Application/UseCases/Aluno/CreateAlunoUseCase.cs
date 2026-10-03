@@ -51,6 +51,19 @@ public class CreateAlunoUseCase
     }
 
     public async Task<CreateAlunoResponse> ExecuteAsync(CreateAlunoRequest request)
+        => await ExecuteCoreAsync(request, googleVerified: false);
+
+    public async Task<CreateAlunoResponse> ExecuteWithGoogleAsync(CreateAlunoGoogleRequest request, string verifiedEmail)
+    {
+        if (!verifiedEmail.EndsWith("@discente.ifpe.edu.br", StringComparison.OrdinalIgnoreCase))
+            throw new UnauthorizedAccessException("O primeiro acesso com Google exige um e-mail @discente.ifpe.edu.br.");
+
+        return await ExecuteCoreAsync(
+            new CreateAlunoRequest(request.Nome, verifiedEmail, request.Matricula, "", request.TurmaCodigo),
+            googleVerified: true);
+    }
+
+    private async Task<CreateAlunoResponse> ExecuteCoreAsync(CreateAlunoRequest request, bool googleVerified)
     {
         if (!request.Email.EndsWith("@ifpe.edu.br", StringComparison.OrdinalIgnoreCase) &&
             !request.Email.EndsWith(".ifpe.edu.br", StringComparison.OrdinalIgnoreCase))
@@ -72,8 +85,9 @@ public class CreateAlunoUseCase
 
         // Criação do usuário no Identity com e-mail NÃO confirmado: a conta fica
         // pendente até o aluno confirmar o código enviado por e-mail (gating no login).
-        var (success, userId, errors) = await _identityService.CreateUserAsync(
-            request.Email, request.Senha, "ALUNO", emailConfirmed: false);
+        var (success, userId, errors) = googleVerified
+            ? await _identityService.CreatePasswordlessUserAsync(request.Email, "ALUNO")
+            : await _identityService.CreateUserAsync(request.Email, request.Senha, "ALUNO", emailConfirmed: false);
 
         if (!success)
             throw new InvalidOperationException("Erro ao criar usuário: " + string.Join("; ", errors));
@@ -107,18 +121,21 @@ public class CreateAlunoUseCase
         await _alunoAtividadeRepo.AddRangeAsync(alunoAtividades);
 
         // Gera e envia o código de verificação de e-mail (validade de 24h).
-        var codigo = GerarCodigoSeisDigitos();
-        await _verificationRepo.AddAsync(new EmailVerificationCode
+        if (!googleVerified)
         {
-            Id = Guid.NewGuid(),
-            IdentityUserId = userId,
-            Code = codigo,
-            ExpiresAtUtc = DateTime.UtcNow.AddHours(24)
-        });
-        await _verificationRepo.SaveChangesAsync();
+            var codigo = GerarCodigoSeisDigitos();
+            await _verificationRepo.AddAsync(new EmailVerificationCode
+            {
+                Id = Guid.NewGuid(),
+                IdentityUserId = userId,
+                Code = codigo,
+                ExpiresAtUtc = DateTime.UtcNow.AddHours(24)
+            });
+            await _verificationRepo.SaveChangesAsync();
 
-        var corpo = _templateService.RenderVerificacaoEmail(aluno.Nome ?? "aluno", codigo);
-        await _emailService.EnviarEmailAsync(aluno.Email!, AssuntoVerificacao, corpo);
+            var corpo = _templateService.RenderVerificacaoEmail(aluno.Nome ?? "aluno", codigo);
+            await _emailService.EnviarEmailAsync(aluno.Email!, AssuntoVerificacao, corpo);
+        }
 
         // Avisa os coordenadores com esta turma aberta para que a lista atualize
         // em tempo real, sem recarregar a página.

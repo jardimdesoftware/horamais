@@ -47,9 +47,9 @@ services:
       - COORD_DOU=${COORD_DOU}
       - CURSO_NOME=${CURSO_NOME}
       - EMAIL__Remetente=${EMAIL__Remetente}
-      - EMAIL__Senha=${EMAIL__Senha}
-      - EMAIL__Smtp=${EMAIL__Smtp}
-      - EMAIL__Porta=${EMAIL__Porta}
+      - EMAIL__LocalSmtp=true
+      - EMAIL__Smtp=mailpit
+      - EMAIL__Porta=1025
       - COORDENADOR_CONVITE_LINK=http://localhost:3000/criarContaCoordenador
       - FileStorage__Endpoint=http://minio:9000
       - FileStorage__AccessKey=${MINIO_ROOT_USER}
@@ -67,6 +67,15 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks:
+      - rede-back-dev
 
   db:
     image: postgres:15

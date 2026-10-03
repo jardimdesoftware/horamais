@@ -1,5 +1,6 @@
 ﻿// Back.API/Controllers/AuthController.cs (adicionando endpoints)
 using Back.Application.DTOs.Auth;
+using Back.Application.DTOs.Aluno;
 using Back.Application.UseCases.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class AuthController : ControllerBase
 {
     private readonly LoginUseCase _loginUseCase;
     private readonly GoogleLoginUseCase _googleLoginUseCase;
+    private readonly RegisterAlunoGoogleUseCase _registerAlunoGoogleUseCase;
     private readonly ForgotPasswordUseCase _forgotPasswordUseCase;
     private readonly ValidateResetCodeUseCase _validateResetCodeUseCase;
     private readonly ResetPasswordUseCase _resetPasswordUseCase;
@@ -25,6 +27,7 @@ public class AuthController : ControllerBase
     public AuthController(
         LoginUseCase loginUseCase,
         GoogleLoginUseCase googleLoginUseCase,
+        RegisterAlunoGoogleUseCase registerAlunoGoogleUseCase,
         ForgotPasswordUseCase forgotPasswordUseCase,
         ValidateResetCodeUseCase validateResetCodeUseCase,
         ResetPasswordUseCase resetPasswordUseCase,
@@ -33,6 +36,7 @@ public class AuthController : ControllerBase
     {
         _loginUseCase = loginUseCase;
         _googleLoginUseCase = googleLoginUseCase;
+        _registerAlunoGoogleUseCase = registerAlunoGoogleUseCase;
         _forgotPasswordUseCase = forgotPasswordUseCase;
         _validateResetCodeUseCase = validateResetCodeUseCase;
         _resetPasswordUseCase = resetPasswordUseCase;
@@ -72,6 +76,15 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("google-register")]
+    [ProducesResponseType(typeof(CreateAlunoResponse), 201)]
+    [AllowAnonymous]
+    public async Task<IActionResult> GoogleRegister([FromBody] CreateAlunoGoogleRequest request)
+    {
+        var result = await _registerAlunoGoogleUseCase.ExecuteAsync(request);
+        return StatusCode(201, result);
     }
 
     [HttpPost("forgot-password")]

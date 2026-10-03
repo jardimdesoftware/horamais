@@ -59,6 +59,7 @@ public static class DependencyInjection
         //auth
         services.AddScoped<LoginUseCase>();
         services.AddScoped<GoogleLoginUseCase>();
+        services.AddScoped<RegisterAlunoGoogleUseCase>();
         services.AddScoped<ForgotPasswordUseCase>();
         services.AddScoped<ValidateResetCodeUseCase>();
         services.AddScoped<ResetPasswordUseCase>();

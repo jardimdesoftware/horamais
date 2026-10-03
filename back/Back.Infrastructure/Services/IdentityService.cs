@@ -39,6 +39,19 @@ public class IdentityService : IIdentityService
         return (true, user.Id, Array.Empty<string>());
     }
 
+    public async Task<(bool Success, string UserId, string[] Errors)> CreatePasswordlessUserAsync(string email, string role)
+    {
+        var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+        var result = await _userManager.CreateAsync(user);
+        if (!result.Succeeded)
+            return (false, "", result.Errors.Select(e => e.Description).ToArray());
+
+        if (!await _roleManager.RoleExistsAsync(role))
+            await _roleManager.CreateAsync(new IdentityRole(role));
+        await _userManager.AddToRoleAsync(user, role);
+        return (true, user.Id, Array.Empty<string>());
+    }
+
     public async Task<(bool Success, string[] Errors)> UpdateUserAsync(string userId, string newEmail, string? newPassword)
     {
         var user = await _userManager.FindByIdAsync(userId);

@@ -33,9 +33,20 @@ public class GoogleLoginUseCaseTests
     [InlineData("aluno@DISCENTE.IFPE.EDU.BR")]
     public void PrimeiroAcesso_Discente_NaoEmiteTokenOuPerfil(string email)
     {
-        var result = GoogleLoginResponseDto.ForFirstAccess("Aluno", email);
+        var result = GoogleLoginResponseDto.ForFirstAccess("Aluno", email, "ticket");
         result.RequiresRegistration.Should().BeTrue();
         result.Email.Should().Be(email);
+        result.Token.Should().BeNull();
+        result.Role.Should().BeNull();
+        result.RegistrationTicket.Should().Be("ticket");
+    }
+
+    [Fact]
+    public void CadastroPendente_NaoEmiteTokenOuPerfil()
+    {
+        var result = GoogleLoginResponseDto.ForPendingVerification("Aluno", "aluno@discente.ifpe.edu.br");
+        result.RequiresVerification.Should().BeTrue();
+        result.RequiresRegistration.Should().BeFalse();
         result.Token.Should().BeNull();
         result.Role.Should().BeNull();
     }
@@ -49,7 +60,7 @@ public class GoogleLoginUseCaseTests
     [InlineData("@discente.ifpe.edu.br")]
     public void PrimeiroAcesso_OutrosDominios_Recusa(string email)
     {
-        var act = () => GoogleLoginResponseDto.ForFirstAccess("Aluno", email);
+        var act = () => GoogleLoginResponseDto.ForFirstAccess("Aluno", email, "ticket");
         act.Should().Throw<UnauthorizedAccessException>();
     }
 }
