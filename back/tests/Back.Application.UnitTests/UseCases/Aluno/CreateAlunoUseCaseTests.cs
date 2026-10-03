@@ -139,4 +139,29 @@ public class CreateAlunoUseCaseTests
             .ThrowAsync<ArgumentException>()
             .WithMessage("Email institucional inválido.");
     }
+
+    [Fact]
+    public async Task CadastroGoogle_CriaContaSemSenhaNemCodigoDeEmail()
+    {
+        var turma = new TurmaBuilder()
+            .WithId(Guid.NewGuid())
+            .WithPeriodo("2024.1")
+            .WithTurno("Noite")
+            .WithCursoId(Guid.NewGuid())
+            .Build();
+        _turmaRepo.Setup(r => r.GetByCodigoAsync("ADS2B7")).ReturnsAsync(turma);
+        _identityService.Setup(r => r.CreatePasswordlessUserAsync("aluno@discente.ifpe.edu.br", "ALUNO"))
+            .ReturnsAsync((true, "google-user", Array.Empty<string>()));
+        _atividadeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<DomainAtividade>());
+
+        var result = await CreateUseCase().ExecuteWithGoogleAsync(
+            new CreateAlunoGoogleRequest("ticket", "Aluno", "20231ewbj2157", "ADS2B7"),
+            "aluno@discente.ifpe.edu.br");
+
+        result.Email.Should().Be("aluno@discente.ifpe.edu.br");
+        _identityService.Verify(r => r.CreatePasswordlessUserAsync("aluno@discente.ifpe.edu.br", "ALUNO"), Times.Once);
+        _identityService.Verify(r => r.CreateUserAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        _verificationRepo.Verify(r => r.AddAsync(It.IsAny<EmailVerificationCode>()), Times.Never);
+        _emailService.Verify(r => r.EnviarEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
 }

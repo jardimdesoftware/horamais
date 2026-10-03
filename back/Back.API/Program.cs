@@ -26,6 +26,7 @@ builder.Host.UseSerilog((context, services, loggerConfig) =>
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .MinimumLevel.Verbose()
+        .MinimumLevel.Override("Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker", Serilog.Events.LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .WriteTo.Console()
         .WriteTo.File(
@@ -65,7 +66,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
     if (builder.Environment.IsDevelopment())
     {
-        options.EnableSensitiveDataLogging();
         options.EnableDetailedErrors();
     }
 });

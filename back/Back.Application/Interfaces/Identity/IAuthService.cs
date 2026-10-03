@@ -7,4 +7,5 @@ public interface IAuthService
 {
     Task<LoginResponseDto> LoginAsync(LoginRequestDto dto);
     Task<GoogleLoginResponseDto> LoginWithGoogleAsync(GoogleLoginRequestDto dto);
+    string ValidateGoogleRegistrationTicket(string ticket);
 }
