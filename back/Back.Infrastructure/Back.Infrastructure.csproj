@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-  	<PackageReference Include="AutoMapper" Version="16.2.0" />
+		<PackageReference Include="AutoMapper" Version="16.2.0" />
 		<PackageReference Include="AWSSDK.S3" Version="4.0.20.2" />
 		<PackageReference Include="MailKit" Version="4.16.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
