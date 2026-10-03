@@ -33,7 +33,7 @@ public class ResetPasswordUseCaseTests
         _identity.Setup(i => i.GetByEmailAsync(user.Email!))
             .ReturnsAsync(user);
 
-        _repo.Setup(r => r.GetByUserAndCodeAsync(user.Id, "000000"))
+        _repo.Setup(r => r.GetActiveByUserAsync(user.Id))
             .ReturnsAsync((ResetPasswordCode?)null);
 
         var useCase = CreateUseCase();
@@ -65,7 +65,7 @@ public class ResetPasswordUseCaseTests
         _identity.Setup(i => i.GetByEmailAsync(user.Email!))
             .ReturnsAsync(user);
 
-        _repo.Setup(r => r.GetByUserAndCodeAsync(user.Id, record.Code))
+        _repo.Setup(r => r.GetActiveByUserAsync(user.Id))
             .ReturnsAsync(record);
 
         _userManager.Setup(u => u.ResetPasswordAsync(user, record.IdentityResetToken, "novaSenha"))

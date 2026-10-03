@@ -19,8 +19,6 @@ public static class DevDataSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
-        await SeedCoordenadorAsync(context, userManager);
-
         if (await context.Cursos.AnyAsync())
             return;
 
@@ -74,117 +72,6 @@ public static class DevDataSeeder
         context.Turmas.AddRange(turma1, turma2);
         await context.SaveChangesAsync();
 
-        // Coordenador
-        var coordEmail = "coordenador.ads@ifpe.edu.br";
-        var coordIdentity = new IdentityUser { UserName = coordEmail, Email = coordEmail, EmailConfirmed = true };
-        var coordResult = await userManager.CreateAsync(coordIdentity, "Senha@123");
-        if (coordResult.Succeeded)
-            await userManager.AddToRoleAsync(coordIdentity, "COORDENADOR");
-
-        var coordenador = new CoordenadorBuilder()
-            .WithId(Guid.NewGuid())
-            .WithNome("Prof. Carlos Mendonça")
-            .WithNumeroPortaria("001/2024")
-            .WithDOU("2024-01-15")
-            .WithEmail(coordEmail)
-            .WithCursoId(cursoId)
-            .WithIdentityUserId(coordIdentity.Id)
-            .Build();
-
-        context.Coordenadores.Add(coordenador);
-        await context.SaveChangesAsync();
-
-        // Busca TODAS as atividades globais para vincular aos alunos
-        var atividades = await context.Atividades.ToListAsync();
-
-        // Alunos (turma 1)
-        var alunosTurma1 = new[]
-        {
-            ("Ana Souza",    "20230001.ads@ifpe.edu.br", "20230001"),
-            ("Bruno Lima",   "20230002.ads@ifpe.edu.br", "20230002"),
-            ("Carlos Melo",  "20230003.ads@ifpe.edu.br", "20230003"),
-        };
-
-        // Alunos (turma 2)
-        var alunosTurma2 = new[]
-        {
-            ("Diana Rocha",  "20240001.ads@ifpe.edu.br", "20240001"),
-            ("Eduardo Paz",  "20240002.ads@ifpe.edu.br", "20240002"),
-        };
-
-        foreach (var (turmaId, alunos) in new[] { (turma1Id, alunosTurma1), (turma2Id, alunosTurma2) })
-        {
-            foreach (var (nome, email, matricula) in alunos)
-            {
-                var identityUser = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
-                var result = await userManager.CreateAsync(identityUser, "Senha@123");
-                if (!result.Succeeded)
-                    continue;
-
-                await userManager.AddToRoleAsync(identityUser, "ALUNO");
-
-                var alunoId = Guid.NewGuid();
-                var aluno = new AlunoBuilder()
-                    .WithId(alunoId)
-                    .WithNome(nome)
-                    .WithEmail(email)
-                    .WithMatricula(matricula)
-                    .WithTurmaId(turmaId)
-                    .WithIdentityUserId(identityUser.Id)
-                    .Build();
-
-                context.Alunos.Add(aluno);
-
-                var alunoAtividades = atividades.Select(a => new AlunoAtividadeBuilder()
-                    .WithId(Guid.NewGuid())
-                    .WithAlunoId(alunoId)
-                    .WithAtividadeId(a.Id)
-                    .WithHorasConcluidas(0)
-                    .Build()).ToList();
-
-                context.AlunoAtividades.AddRange(alunoAtividades);
-            }
-        }
-
-        await context.SaveChangesAsync();
         Console.WriteLine(" Dev data seed concluído.");
-    }
-
-    private static async Task SeedCoordenadorAsync(ApplicationDbContext context, UserManager<IdentityUser> userManager)
-    {
-        const string coordEmail = "coordenador.ads@ifpe.edu.br";
-        const string coordSenha = "Senha@123";
-
-        // Já existe → nada a fazer
-        if (await userManager.FindByEmailAsync(coordEmail) != null)
-            return;
-
-        var curso = await context.Cursos.FirstOrDefaultAsync();
-        if (curso == null)
-            return; // cursos ainda não existem, o bloco abaixo vai criar junto
-
-        var identity = new IdentityUser { UserName = coordEmail, Email = coordEmail, EmailConfirmed = true };
-        var result = await userManager.CreateAsync(identity, coordSenha);
-        if (!result.Succeeded)
-        {
-            Console.WriteLine($" Falha ao criar coordenador de dev: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-            return;
-        }
-
-        await userManager.AddToRoleAsync(identity, "COORDENADOR");
-
-        var coordenador = new CoordenadorBuilder()
-            .WithId(Guid.NewGuid())
-            .WithNome("Prof. Carlos Mendonça")
-            .WithNumeroPortaria("001/2024")
-            .WithDOU("2024-01-15")
-            .WithEmail(coordEmail)
-            .WithCursoId(curso.Id)
-            .WithIdentityUserId(identity.Id)
-            .Build();
-
-        context.Coordenadores.Add(coordenador);
-        await context.SaveChangesAsync();
-        Console.WriteLine(" Coordenador de dev criado.");
     }
 }

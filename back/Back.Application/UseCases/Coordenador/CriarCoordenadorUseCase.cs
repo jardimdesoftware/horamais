@@ -35,8 +35,14 @@ public class CriarCoordenadorUseCase
         if (convite == null)
             throw new InvalidOperationException("Token inválido ou expirado.");
 
+        if (!string.Equals(request.Email.Trim(), convite.Email.Trim(), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("O e-mail informado não corresponde ao convite.");
+
+        if (!await _conviteRepo.TryConsumeAsync(convite.Id))
+            throw new InvalidOperationException("Token inválido, expirado ou já utilizado.");
+
         // 2. Criar usuário no Identity
-        var (success, userId, errors) = await _identity.CreateUserAsync(request.Email, request.Senha, "COORDENADOR");
+        var (success, userId, errors) = await _identity.CreateUserAsync(convite.Email, request.Senha, "COORDENADOR");
         if (!success)
             throw new InvalidOperationException("Erro ao criar usuário: " + string.Join("; ", errors));
 
@@ -44,7 +50,7 @@ public class CriarCoordenadorUseCase
         var coordenador = new CoordenadorBuilder()
             .WithId(Guid.NewGuid())
             .WithNome(request.Nome)
-            .WithEmail(request.Email)
+            .WithEmail(convite.Email)
             .WithNumeroPortaria(request.NumeroPortaria)
             .WithDOU(request.DOU)
             .WithCursoId(convite.CursoId)
@@ -52,9 +58,6 @@ public class CriarCoordenadorUseCase
             .Build();
 
         await _coordenadorRepo.AddAsync(coordenador);
-
-        // 4. Marcar convite como usado
-        await _conviteRepo.MarcarComoUsadoAsync(convite);
 
         return new CoordenadorResponse(coordenador.Id, coordenador.Nome, coordenador.Email);
     }

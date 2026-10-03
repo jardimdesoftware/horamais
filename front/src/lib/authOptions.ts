@@ -212,7 +212,6 @@ export const authOptions: AuthOptions = {
 
       (session.user as any).entidadeId = token.entidadeId;
       (session.user as any).isNewPpc = token.isNewPpc;
-      (session as any).token = token.accessToken;
 
       if (token.role === 'aluno') {
         (session.user as any).cursoId = token.cursoId;

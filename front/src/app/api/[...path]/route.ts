@@ -1,3 +1,6 @@
+import { getToken } from 'next-auth/jwt';
+import type { NextRequest } from 'next/server';
+
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
   'keep-alive',
@@ -34,7 +37,12 @@ function buildTargetUrl(path: string[], request: Request) {
 function copyRequestHeaders(request: Request) {
   const headers = new Headers();
   request.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
+    if (
+      !HOP_BY_HOP_HEADERS.has(key.toLowerCase()) &&
+      !['authorization', 'cookie', 'origin', 'referer'].includes(
+        key.toLowerCase()
+      )
+    ) {
       headers.set(key, value);
     }
   });
@@ -62,6 +70,17 @@ async function proxy(request: Request, context: RouteContext) {
     headers: copyRequestHeaders(request),
     cache: 'no-store'
   };
+
+  const session = await getToken({
+    req: request as NextRequest,
+    secret: process.env.NEXTAUTH_SECRET!
+  });
+  if (session?.accessToken) {
+    (requestInit.headers as Headers).set(
+      'Authorization',
+      `Bearer ${session.accessToken}`
+    );
+  }
 
   if (hasBody) {
     requestInit.body = await request.arrayBuffer();

@@ -1,5 +1,6 @@
 using Back.API.Configurations;
 using Back.API.Middleware;
+using Back.API.Services;
 using Back.Application;
 using Back.Infrastructure;
 using Back.Infrastructure.Persistence.Context;
@@ -7,10 +8,13 @@ using Back.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var envPath = FindFileUpwards(Directory.GetCurrentDirectory(), ".env");
 if (envPath is not null)
@@ -41,6 +45,20 @@ builder.Host.UseSerilog((context, services, loggerConfig) =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<ResourceAuthorizationService>();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 300,
+            Window = TimeSpan.FromMinutes(5),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        }));
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfig();
 
@@ -49,8 +67,6 @@ builder.Services.AddCorsConfig(corsAllowedOrigins, builder.Environment.IsDevelop
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
 });
 
 var connectionString = FirstNonEmpty(
@@ -71,7 +87,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services
-    .AddIdentity<IdentityUser, IdentityRole>()
+    .AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -102,6 +123,47 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var principal = context.Principal;
+            var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var stamp = principal?.FindFirst("security_stamp")?.Value;
+            if (string.IsNullOrWhiteSpace(userId) || stamp is null)
+            {
+                context.Fail("Sessão inválida.");
+                return;
+            }
+
+            var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+            var identity = await db.Users.AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => new { u.SecurityStamp })
+                .SingleOrDefaultAsync();
+            if (identity is null || identity.SecurityStamp != stamp)
+            {
+                context.Fail("Sessão revogada.");
+                return;
+            }
+
+            var role = principal!.FindFirst(ClaimTypes.Role)?.Value;
+            if (role is null || !await db.UserRoles
+                .Join(db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, r.Name })
+                .AnyAsync(x => x.UserId == userId && x.Name == role))
+            {
+                context.Fail("Perfil revogado.");
+                return;
+            }
+
+            if (role == "ALUNO" && !await db.Alunos.AnyAsync(a => a.IdentityUserId == userId && a.IsAtivo))
+                context.Fail("Aluno inativo.");
+            else if (role == "COORDENADOR" && !await db.Coordenadores.AnyAsync(c => c.IdentityUserId == userId))
+                context.Fail("Coordenador removido.");
+            else if (role == "ADMIN" && !await db.Admins.AnyAsync(a => a.IdentityUserId == userId))
+                context.Fail("Administrador removido.");
+        }
+    };
 });
 
 builder.Services.AddApplication();
@@ -128,7 +190,9 @@ await SeedDatabaseAsync(app, includeDevelopmentData: app.Environment.IsDevelopme
 app.UseForwardedHeaders();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseRouting();
 app.UseCors(CorsConfig.PolicyName);
+app.UseRateLimiter();
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -183,6 +247,8 @@ async Task SeedDatabaseAsync(WebApplication app, bool includeDevelopmentData)
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
+
+    await LegacySeedCredentialRemediator.RunAsync(userManager);
 
     Console.WriteLine(" Rodando seed de admin...");
     await AdminSeeder.SeedAsync(context, userManager);

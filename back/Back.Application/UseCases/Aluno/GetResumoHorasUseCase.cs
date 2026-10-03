@@ -1,5 +1,6 @@
 ﻿using Back.Application.DTOs.Aluno;
 using Back.Application.Interfaces.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,11 +18,11 @@ public class GetResumoHorasUseCase
         _limiteRepo = limiteRepo;
     }
 
-    public async Task<IEnumerable<AlunoResumoHorasResponse>> ExecuteAsync()
+    public async Task<IEnumerable<AlunoResumoHorasResponse>> ExecuteAsync(Guid? cursoId = null)
     {
         var alunos = await _alunoRepo.GetAllWithAtividadesAsync();
 
-        return alunos.Select(a =>
+        return alunos.Where(a => !cursoId.HasValue || a.Turma?.CursoId == cursoId.Value).Select(a =>
         {
             var limite = _limiteRepo.GetByCursoIdAsync(a.Turma!.CursoId).Result;
 

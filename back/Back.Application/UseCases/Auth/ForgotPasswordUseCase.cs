@@ -40,11 +40,15 @@ namespace Back.Application.UseCases.Auth
                 // Resposta idempotente: não revela existência do e-mail
                 return new ForgotPasswordResponseDto();
             }
+            if (await _userManager.IsInRoleAsync(user, "ALUNO"))
+                return new ForgotPasswordResponseDto();
 
             // Invalida código ativo anterior
             var active = await _repo.GetActiveByUserAsync(user.Id);
             if (active != null)
             {
+                if (active.CreatedAtUtc > DateTime.UtcNow.AddMinutes(-1))
+                    return new ForgotPasswordResponseDto();
                 active.Used = true;
                 await _repo.UpdateAsync(active);
                 await _repo.SaveChangesAsync();

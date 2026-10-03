@@ -67,6 +67,29 @@ Esta aplicação permitirá que os estudantes cadastrem suas atividades extracur
 
 ## 📚 Documentação
 
+### Provisionamento e remediação de contas
+
+Defina `ADMIN_EMAIL` e uma `ADMIN_PASSWORD` única e forte antes do primeiro boot.
+O administrador usa o endpoint de convite para cadastrar coordenadores; o
+convite só vale para o e-mail destinatário, expira em duas horas e é consumido
+uma vez. Alunos entram com uma conta Google institucional e não precisam de
+senha local. O seed de desenvolvimento cria curso e turmas, mas não cria mais
+usuários com senha pública.
+
+Ao atualizar uma instalação antiga, o boot remove automaticamente a senha
+conhecida das seis contas de demonstração que ainda a utilizem. Os dados
+dessas contas permanecem; cadastre coordenadores reais por convite e remova
+os usuários de demonstração que não forem necessários. Revise também as
+credenciais do administrador e de qualquer coordenador provisionado por
+variáveis de ambiente: mudar a variável após o primeiro boot não altera a
+senha já gravada no Identity. Faça a troca pelo fluxo de recuperação ou por
+um procedimento administrativo controlado. A atualização invalida JWTs
+anteriores, exigindo novo login.
+
+Em produção, o Compose publica apenas o frontend. Backend, PostgreSQL e
+MinIO ficam na rede interna. No Compose de desenvolvimento, as portas são
+vinculadas a `127.0.0.1` para permitir acesso local sem exposição na rede.
+
 ### Imagens Docker AMD64 e ARM64
 
 Os workflows de frontend e backend geram imagens para `linux/amd64` e

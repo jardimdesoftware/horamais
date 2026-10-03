@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Back.Application.DTOs.Certificado;
 using Back.Application.UseCases.Certificado;
+using Back.API.Services;
 using Back.Domain.Entities.Certificado;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,15 @@ namespace Back.API.Controllers
         private readonly GetCertificadoByIdUseCase _getById;
         private readonly UpdateCertificadoUseCase _update; 
         private readonly DeleteCertificadoUseCase _delete; 
+        private readonly ResourceAuthorizationService _access;
         public CertificadoController(
             CreateCertificadoUseCase create,
             GetCertificadosUseCase get,
             AtualizarStatusCertificadoUseCase atualizar,
             GetCertificadoByIdUseCase getById,
             UpdateCertificadoUseCase update, 
-            DeleteCertificadoUseCase delete)
+            DeleteCertificadoUseCase delete,
+            ResourceAuthorizationService access)
         {
             _create = create;
             _get = get;
@@ -33,10 +36,12 @@ namespace Back.API.Controllers
             _getById = getById;
             _update = update;
             _delete = delete;
+            _access = access;
         }
 
         [HttpPost]
         [Authorize(Roles = "ALUNO")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
         [SwaggerOperation(Summary = "Envia um novo certificado para validação.", Tags = new[] { "Certificados" })]
         [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
@@ -45,6 +50,8 @@ namespace Back.API.Controllers
         {
             if (request.Anexo == null || request.Anexo.Length == 0)
                 return BadRequest(new { erro = "O anexo é obrigatório e deve conter conteúdo válido." });
+
+            await _access.EnsureStudentOwnsAlunoAsync(User, request.AlunoId);
 
             try
             {
@@ -68,7 +75,8 @@ namespace Back.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<CertificadoResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Listar([FromQuery] StatusCertificado? status, [FromQuery] Guid? alunoId)
         {
-            var certificados = await _get.ExecuteAsync(status, alunoId);
+            var cursoId = await _access.CoordinatorCourseIdAsync(User);
+            var certificados = await _get.ExecuteAsync(status, alunoId, cursoId);
             return Ok(certificados);
         }
 
@@ -87,6 +95,7 @@ namespace Back.API.Controllers
         /// <response code="404">Certificado não encontrado.</response>
         [HttpPut("{id}")]
         [Authorize(Roles = "ALUNO")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
         [Consumes("multipart/form-data")]
         [SwaggerOperation(Summary = "Atualiza um certificado PENDENTE.", Tags = new[] { "Certificados" })]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -136,6 +145,7 @@ namespace Back.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Deletar(Guid id)
         {
+            await _access.EnsureCoordinatorCanManageCertificadoAsync(User, id);
             try
             {
                 await _delete.ExecuteAsync(id);
@@ -159,6 +169,7 @@ namespace Back.API.Controllers
         [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ObterPorId(Guid id, [FromServices] GetCertificadoByIdUseCase useCase)
         {
+            await _access.EnsureCanReadCertificadoAsync(User, id);
             try
             {
                 var certificado = await useCase.ExecuteAsync(id);
@@ -182,6 +193,7 @@ namespace Back.API.Controllers
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)]
             AprovarCertificadoRequest? request = null)
         {
+            await _access.EnsureCoordinatorCanManageCertificadoAsync(User, id);
             try
             {
                 var ok = await _atualizar.ExecuteAsync(id, StatusCertificado.APROVADO, novaCargaHoraria: request?.NovaCargaHoraria);
@@ -204,6 +216,7 @@ namespace Back.API.Controllers
         [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Reprovar(Guid id, [FromBody] ReprovarCertificadoRequest request)
         {
+            await _access.EnsureCoordinatorCanManageCertificadoAsync(User, id);
             try
             {
                 var ok = await _atualizar.ExecuteAsync(id, StatusCertificado.REPROVADO, request.Justificativa);
@@ -267,6 +280,7 @@ namespace Back.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<CertificadoPorCursoResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPorCurso(Guid cursoId, [FromServices] GetCertificadosByCursoIdUseCase useCase)
         {
+            await _access.EnsureCourseAsync(User, cursoId);
             var result = await useCase.ExecuteAsync(cursoId);
             return Ok(result);
         }
@@ -277,6 +291,7 @@ namespace Back.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> BaixarAnexo(Guid id, [FromServices] GetCertificadoAnexoUseCase useCase)
         {
+            await _access.EnsureCanReadCertificadoAsync(User, id);
             try
             {
                 var (content, nomeArquivo, contentType) = await useCase.ExecuteAsync(id);

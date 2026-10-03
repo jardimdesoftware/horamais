@@ -51,7 +51,8 @@ ENV NEXT_PUBLIC_BUILDTIME=$BUILDTIME
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
+RUN npm ci --omit=dev --legacy-peer-deps --ignore-scripts --no-audit --no-fund \
+    && npm cache clean --force
 
 
 EXPOSE 3000

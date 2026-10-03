@@ -35,11 +35,19 @@ namespace Back.Application.UseCases.Auth
                 throw new InvalidOperationException("Código inválido ou expirado.");
 
             if (user.EmailConfirmed)
-                return new ConfirmEmailResponseDto { Message = "E-mail já confirmado." };
-
-            var record = await _repo.GetByUserAndCodeAsync(user.Id, dto.Code);
-            if (record == null || record.Used || record.ExpiresAtUtc <= DateTime.UtcNow)
                 throw new InvalidOperationException("Código inválido ou expirado.");
+
+            var record = await _repo.GetActiveByUserAsync(user.Id);
+            if (record == null || record.Attempts >= 5)
+                throw new InvalidOperationException("Código inválido ou expirado.");
+
+            if (record.Code != dto.Code)
+            {
+                record.Attempts++;
+                await _repo.UpdateAsync(record);
+                await _repo.SaveChangesAsync();
+                throw new InvalidOperationException("Código inválido ou expirado.");
+            }
 
             user.EmailConfirmed = true;
             var result = await _userManager.UpdateAsync(user);

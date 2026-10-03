@@ -4,6 +4,7 @@ using Back.Application.DTOs.Aluno;
 using Back.Application.UseCases.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Back.API.Controllers;
 
 [ApiController]
 [AllowAnonymous]
+[EnableRateLimiting("auth")]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {

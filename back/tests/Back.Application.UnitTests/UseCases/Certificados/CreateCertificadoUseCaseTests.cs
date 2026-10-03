@@ -28,13 +28,13 @@ public class CreateCertificadoUseCaseTests
 
     private static Mock<IFormFile> CriarAnexoMock(out MemoryStream stream)
     {
-        var fileBytes = Encoding.UTF8.GetBytes("PDF");
+        var fileBytes = Encoding.UTF8.GetBytes("%PDF-1.7\n");
         stream = new MemoryStream(fileBytes);
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.ContentType).Returns("application/pdf");
         fileMock.Setup(f => f.FileName).Returns("file.pdf");
         fileMock.Setup(f => f.Length).Returns(fileBytes.Length);
-        fileMock.Setup(f => f.OpenReadStream()).Returns(stream);
+        fileMock.Setup(f => f.OpenReadStream()).Returns(() => new MemoryStream(fileBytes));
         return fileMock;
     }
 

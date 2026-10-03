@@ -129,7 +129,7 @@ public class CreateAlunoUseCase
                 Id = Guid.NewGuid(),
                 IdentityUserId = userId,
                 Code = codigo,
-                ExpiresAtUtc = DateTime.UtcNow.AddHours(24)
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(10)
             });
             await _verificationRepo.SaveChangesAsync();
 

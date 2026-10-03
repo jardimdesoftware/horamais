@@ -4,7 +4,6 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
-import { useCriarAluno } from '@/hooks/useCriarAluno';
 import { extractApiError } from '@/lib/apiError';
 import { confirmEmail, resendVerification } from '@/services/authRecovery';
 import { verificarTurmaExiste } from '@/services/classService';
@@ -45,13 +44,10 @@ export const useFirstAccess = () => {
   );
   const [codigoVerificacao, setCodigoVerificacao] = useState('');
 
-  const { mutateAsync: criarAlunoAsync, isPending: isCriandoAluno } =
-    useCriarAluno();
-
   const form = useForm<FirstAccessSchema>({
     resolver: zodResolver(firstAccessSchema),
     mode: 'onChange',
-    defaultValues: { google: isGoogleFirstAccess }
+    defaultValues: {}
   });
 
   useEffect(() => {
@@ -115,18 +111,7 @@ export const useFirstAccess = () => {
         return;
       }
 
-      await criarAlunoAsync({
-        nome: data.nome,
-        email: data.email,
-        matricula: data.matricula,
-        senha: data.senha!,
-        turmaCodigo: turma.codigo
-      });
-      setEmailCadastrado(data.email);
-      toast.success(
-        'Cadastro iniciado! Enviamos um código de verificação para o seu e-mail.'
-      );
-      setStep(3);
+      await signIn('google', { callbackUrl: '/' });
     } catch (err) {
       const response = (err as { response?: { status?: number } })?.response;
       const message = extractApiError(
@@ -203,7 +188,7 @@ export const useFirstAccess = () => {
     setCodigo,
     turma,
     form,
-    loading: loading || isCriandoAluno,
+    loading,
     emailCadastrado,
     codigoVerificacao,
     setCodigoVerificacao,
