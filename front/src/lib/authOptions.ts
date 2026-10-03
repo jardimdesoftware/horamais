@@ -25,8 +25,23 @@ interface BackendUser {
 }
 
 type GoogleBackendResponse =
-  | (BackendUser & { requiresRegistration?: false })
-  | { requiresRegistration: true; nome: string; email: string };
+  | (BackendUser & {
+      requiresRegistration?: false;
+      requiresVerification?: false;
+    })
+  | {
+      requiresRegistration: true;
+      requiresVerification?: false;
+      nome: string;
+      email: string;
+      registrationTicket: string;
+    }
+  | {
+      requiresRegistration?: false;
+      requiresVerification: true;
+      nome: string;
+      email: string;
+    };
 
 interface DecodedToken {
   entidadeId?: string;
@@ -112,13 +127,20 @@ export const authOptions: AuthOptions = {
         );
 
         const backendUser = response.data;
+        if (backendUser.requiresVerification) {
+          const params = new URLSearchParams({
+            verify: '1',
+            email: backendUser.email
+          });
+          return `/primeiroAcesso?${params.toString()}`;
+        }
         if (backendUser.requiresRegistration) {
           const params = new URLSearchParams({
             google: '1',
             email: backendUser.email,
             nome: backendUser.nome ?? ''
           });
-          return `/primeiroAcesso?${params.toString()}`;
+          return `/primeiroAcesso?${params.toString()}#ticket=${encodeURIComponent(backendUser.registrationTicket)}`;
         }
         const userRole = backendUser.role.toLowerCase();
 

@@ -17,6 +17,9 @@ import { useFirstAccess } from './hooks/useFirstAccess';
 export const FirstAccess = () => {
   const {
     isGoogleFirstAccess,
+    registrationTicket,
+    restartGoogle,
+    isPendingVerification,
     step,
     codigo,
     setCodigo,
@@ -61,13 +64,24 @@ export const FirstAccess = () => {
 
           {isGoogleFirstAccess && step < 3 && (
             <p className="text-sm text-gray-700 mb-4 text-center">
-              Complete seu cadastro para acessar o HoraMais. Informe o código da
-              turma, sua matrícula e crie uma senha. Depois de confirmar o
-              e-mail, você poderá entrar com Google ou com e-mail e senha.
+              Complete seu cadastro com o código da turma e sua matrícula.
+              Depois, você entrará com sua conta Google, sem criar senha.
             </p>
           )}
 
-          {step === 1 && (
+          {isGoogleFirstAccess && !registrationTicket && step < 3 && (
+            <div className="text-center space-y-4">
+              <p className="text-sm text-gray-700">
+                Sua autorização do Google expirou. Entre novamente para
+                continuar o cadastro.
+              </p>
+              <Button type="button" onClick={restartGoogle} className="w-full">
+                Entrar com Google
+              </Button>
+            </div>
+          )}
+
+          {step === 1 && (!isGoogleFirstAccess || registrationTicket) && (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -93,115 +107,128 @@ export const FirstAccess = () => {
             </form>
           )}
 
-          {step === 2 && turma && (
-            <form onSubmit={handleSubmit(handleFinalizarCadastro)}>
-              <p className="text-sm text-gray-700 mb-4 text-center">
-                Entrando na turma: <strong>{turma.nome}</strong>
-              </p>
+          {step === 2 &&
+            turma &&
+            (!isGoogleFirstAccess || registrationTicket) && (
+              <form onSubmit={handleSubmit(handleFinalizarCadastro)}>
+                <p className="text-sm text-gray-700 mb-4 text-center">
+                  Entrando na turma: <strong>{turma.nome}</strong>
+                </p>
 
-              <div className="mb-3">
-                <label className="block mb-1 text-sm">Nome:</label>
-                <Input
-                  placeholder="Nome completo"
-                  icon={faUser}
-                  {...register('nome')}
-                />
-                {errors.nome && (
-                  <p className="text-xs text-red-500">{errors.nome.message}</p>
+                <div className="mb-3">
+                  <label className="block mb-1 text-sm">Nome:</label>
+                  <Input
+                    placeholder="Nome completo"
+                    icon={faUser}
+                    {...register('nome')}
+                  />
+                  {errors.nome && (
+                    <p className="text-xs text-red-500">
+                      {errors.nome.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-3">
+                  <label className="block mb-1 text-sm">Email:</label>
+                  <Input
+                    placeholder="Digite seu email institucional"
+                    icon={faEnvelope}
+                    readOnly={isGoogleFirstAccess}
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-red-500">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-3">
+                  <label className="block mb-1 text-sm">Matrícula:</label>
+                  <Input
+                    placeholder="Matrícula"
+                    icon={faIdBadge}
+                    {...register('matricula')}
+                  />
+                  {errors.matricula && (
+                    <p className="text-xs text-red-500">
+                      {errors.matricula.message}
+                    </p>
+                  )}
+                </div>
+
+                {!isGoogleFirstAccess && (
+                  <div className="mb-4">
+                    <label className="block mb-1 text-sm">Senha:</label>
+                    <Input
+                      isPassword
+                      placeholder="Digite sua senha"
+                      {...register('senha')}
+                    />
+                    <ul className="mt-2 space-y-1 text-sm">
+                      <li
+                        className={`${senha.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        • Mínimo de 8 caracteres
+                      </li>
+                      <li
+                        className={`${/[A-Z]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        • Pelo menos 1 letra maiúscula (A–Z)
+                      </li>
+                      <li
+                        className={`${/[a-z]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        • Pelo menos 1 letra minúscula (a–z)
+                      </li>
+                      <li
+                        className={`${/[0-9]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        • Pelo menos 1 número (0–9)
+                      </li>
+                      <li
+                        className={`${/[!@#$%^&*(),.?":{}|<>_\-\]]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        • Pelo menos 1 caractere especial
+                      </li>
+                    </ul>
+                    {errors.senha && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.senha.message}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
 
-              <div className="mb-3">
-                <label className="block mb-1 text-sm">Email:</label>
-                <Input
-                  placeholder="Digite seu email institucional"
-                  icon={faEnvelope}
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email.message}</p>
+                {!isGoogleFirstAccess && (
+                  <div className="mb-4">
+                    <label className="block mb-1 text-sm">
+                      Confirmar Senha:
+                    </label>
+                    <Input
+                      isPassword
+                      placeholder="Confirmar Senha"
+                      {...register('confirmarSenha')}
+                    />
+
+                    {errors.confirmarSenha && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.confirmarSenha.message}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
 
-              <div className="mb-3">
-                <label className="block mb-1 text-sm">Matrícula:</label>
-                <Input
-                  placeholder="Matrícula"
-                  icon={faIdBadge}
-                  {...register('matricula')}
-                />
-                {errors.matricula && (
-                  <p className="text-xs text-red-500">
-                    {errors.matricula.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-4">
-                <label className="block mb-1 text-sm">Senha:</label>
-                <Input
-                  isPassword
-                  placeholder="Digite sua senha"
-                  {...register('senha')}
-                />
-                <ul className="mt-2 space-y-1 text-sm">
-                  <li
-                    className={`${senha.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}
-                  >
-                    • Mínimo de 8 caracteres
-                  </li>
-                  <li
-                    className={`${/[A-Z]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
-                  >
-                    • Pelo menos 1 letra maiúscula (A–Z)
-                  </li>
-                  <li
-                    className={`${/[a-z]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
-                  >
-                    • Pelo menos 1 letra minúscula (a–z)
-                  </li>
-                  <li
-                    className={`${/[0-9]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
-                  >
-                    • Pelo menos 1 número (0–9)
-                  </li>
-                  <li
-                    className={`${/[!@#$%^&*(),.?":{}|<>_\-\]]/.test(senha) ? 'text-green-600' : 'text-gray-500'}`}
-                  >
-                    • Pelo menos 1 caractere especial
-                  </li>
-                </ul>
-                {errors.senha && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.senha.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-4">
-                <label className="block mb-1 text-sm">Confirmar Senha:</label>
-                <Input
-                  isPassword
-                  placeholder="Confirmar Senha"
-                  {...register('confirmarSenha')}
-                />
-
-                {errors.confirmarSenha && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.confirmarSenha.message}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading || !isValid}
-                className="w-full"
-              >
-                {loading ? 'Finalizando...' : 'Finalizar'}
-              </Button>
-            </form>
-          )}
+                <Button
+                  type="submit"
+                  disabled={loading || !isValid}
+                  className="w-full"
+                >
+                  {loading ? 'Finalizando...' : 'Finalizar'}
+                </Button>
+              </form>
+            )}
 
           {step === 3 && (
             <form
@@ -211,9 +238,13 @@ export const FirstAccess = () => {
               }}
             >
               <p className="text-sm text-gray-700 mb-4 text-center">
-                Enviamos um código de 6 dígitos para{' '}
-                <strong>{emailCadastrado}</strong>. Insira-o abaixo para ativar
-                sua conta.
+                {isPendingVerification
+                  ? 'Seu cadastro já foi iniciado para '
+                  : 'Enviamos um código de 6 dígitos para '}
+                <strong>{emailCadastrado}</strong>.
+                {isPendingVerification
+                  ? ' Insira o código de verificação ou peça um novo abaixo.'
+                  : ' Insira-o abaixo para ativar sua conta.'}
               </p>
 
               <label className="block mb-1 text-sm">
