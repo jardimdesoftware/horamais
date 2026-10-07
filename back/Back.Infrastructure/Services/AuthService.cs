@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Back.Infrastructure.Services;
@@ -69,14 +71,71 @@ public class AuthService : IAuthService
 
         var identityUser = await _userManager.FindByEmailAsync(payload.Email);
         if (identityUser == null)
-            return GoogleLoginResponseDto.ForFirstAccess(payload.Name, payload.Email);
+            return GoogleLoginResponseDto.ForFirstAccess(payload.Name, payload.Email, CreateGoogleRegistrationTicket(payload.Email));
 
         if (!identityUser.EmailConfirmed)
-            throw new UnauthorizedAccessException("E-mail não verificado. Verifique sua caixa de entrada para confirmar o código de cadastro.");
+        {
+            var roles = await _userManager.GetRolesAsync(identityUser);
+            if (roles.Contains("ALUNO") && await _context.Alunos.AnyAsync(a => a.IdentityUserId == identityUser.Id))
+            {
+                if (await _userManager.HasPasswordAsync(identityUser))
+                {
+                    var removePassword = await _userManager.RemovePasswordAsync(identityUser);
+                    if (!removePassword.Succeeded)
+                        throw new InvalidOperationException("Não foi possível concluir o cadastro com Google.");
+                }
+                identityUser.EmailConfirmed = true;
+                var update = await _userManager.UpdateAsync(identityUser);
+                if (!update.Succeeded)
+                    throw new InvalidOperationException("Não foi possível concluir o cadastro com Google.");
+            }
+            else
+                return GoogleLoginResponseDto.ForPendingVerification(payload.Name, payload.Email);
+        }
 
         var login = await BuildLoginResponseAsync(identityUser);
         return new GoogleLoginResponseDto(login.Nome, login.Email, login.Role, login.Token);
     }
+
+    private byte[] GoogleRegistrationSigningKey()
+    {
+        var jwtKey = _config["JWT:Key"] ?? throw new InvalidOperationException("Chave JWT não configurada.");
+        return SHA256.HashData(Encoding.UTF8.GetBytes("google-registration:" + jwtKey));
+    }
+
+    private string CreateGoogleRegistrationTicket(string email)
+    {
+        var payload = JsonSerializer.SerializeToUtf8Bytes(new GoogleRegistrationTicket(email, DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds()));
+        var signature = HMACSHA256.HashData(GoogleRegistrationSigningKey(), payload);
+        return Base64UrlEncoder.Encode(payload) + "." + Base64UrlEncoder.Encode(signature);
+    }
+
+    public string ValidateGoogleRegistrationTicket(string ticket)
+    {
+        if (string.IsNullOrWhiteSpace(ticket))
+            throw new UnauthorizedAccessException("Cadastro com Google expirado. Entre com Google novamente.");
+
+        try
+        {
+            var parts = ticket.Split('.');
+            if (parts.Length != 2) throw new FormatException();
+            var payload = Base64UrlEncoder.DecodeBytes(parts[0]);
+            var signature = Base64UrlEncoder.DecodeBytes(parts[1]);
+            var expected = HMACSHA256.HashData(GoogleRegistrationSigningKey(), payload);
+            if (signature.Length != expected.Length || !CryptographicOperations.FixedTimeEquals(signature, expected))
+                throw new FormatException();
+            var claims = JsonSerializer.Deserialize<GoogleRegistrationTicket>(payload);
+            if (claims == null || claims.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds() || string.IsNullOrWhiteSpace(claims.Email))
+                throw new FormatException();
+            return claims.Email;
+        }
+        catch (Exception ex) when (ex is FormatException or JsonException or ArgumentException)
+        {
+            throw new UnauthorizedAccessException("Cadastro com Google expirado. Entre com Google novamente.");
+        }
+    }
+
+    private sealed record GoogleRegistrationTicket(string Email, long ExpiresAt);
 
     private async Task<LoginResponseDto> BuildLoginResponseAsync(IdentityUser identityUser)
     {

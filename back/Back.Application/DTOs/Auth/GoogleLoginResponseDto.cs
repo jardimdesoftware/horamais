@@ -7,9 +7,14 @@ public record GoogleLoginResponseDto(
     string Email,
     string? Role,
     string? Token,
-    bool RequiresRegistration = false)
+    bool RequiresRegistration = false,
+    bool RequiresVerification = false,
+    string? RegistrationTicket = null)
 {
-    public static GoogleLoginResponseDto ForFirstAccess(string nome, string email)
+    public static GoogleLoginResponseDto ForPendingVerification(string nome, string email)
+        => new(nome, email, null, null, false, true);
+
+    public static GoogleLoginResponseDto ForFirstAccess(string nome, string email, string registrationTicket)
     {
         var parts = email.Split('@');
         if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) ||
@@ -17,6 +22,6 @@ public record GoogleLoginResponseDto(
             throw new UnauthorizedAccessException("O primeiro acesso com Google exige um e-mail @discente.ifpe.edu.br.");
 
         // Primeiro acesso não concede perfil nem token de acesso à aplicação.
-        return new(nome, email, null, null, true);
+        return new(nome, email, null, null, true, false, registrationTicket);
     }
 }
