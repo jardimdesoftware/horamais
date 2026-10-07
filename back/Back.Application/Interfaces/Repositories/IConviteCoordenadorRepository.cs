@@ -7,6 +7,6 @@ public interface IConviteCoordenadorRepository
 {
     Task AddAsync(ConviteCoordenador convite);
     Task<ConviteCoordenador?> GetValidByTokenAsync(string token);
-    Task MarcarComoUsadoAsync(ConviteCoordenador convite);
+    Task<bool> TryConsumeAsync(System.Guid id);
     Task SaveChangesAsync();
 }

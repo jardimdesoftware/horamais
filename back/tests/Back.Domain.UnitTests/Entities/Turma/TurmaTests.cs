@@ -12,6 +12,7 @@ public class TurmaTests
             .WithId(Guid.NewGuid())
             .WithPeriodo("2024.1")
             .WithTurno("Noite")
+            .WithCodigo("ADS1B7")
             .WithCursoId(Guid.NewGuid())
             .WithPossuiExtensao(true)
             .Build();

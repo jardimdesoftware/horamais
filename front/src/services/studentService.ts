@@ -4,7 +4,6 @@ export interface CreateAlunoRequest {
   nome: string;
   email: string;
   matricula: string;
-  senha: string;
   turmaId?: string;
   turmaCodigo?: string;
 }
@@ -92,14 +91,6 @@ export interface ContagemPendenciaDownloadResponse {
   totalPendencias: number;
 }
 // ========== Requisições à API ==========
-
-// Criar novo aluno
-export const criarAluno = async (
-  dados: CreateAlunoRequest
-): Promise<CreateAlunoResponse> => {
-  const response = await api.post<CreateAlunoResponse>('/Aluno', dados);
-  return response.data;
-};
 
 export interface CreateAlunoGoogleRequest {
   registrationTicket: string;

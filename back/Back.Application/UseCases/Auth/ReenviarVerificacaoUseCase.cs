@@ -46,6 +46,8 @@ namespace Back.Application.UseCases.Auth
             var active = await _repo.GetActiveByUserAsync(user.Id);
             if (active != null)
             {
+                if (active.CreatedAtUtc > DateTime.UtcNow.AddMinutes(-1))
+                    return new ResendVerificationResponseDto();
                 active.Used = true;
                 await _repo.UpdateAsync(active);
             }
@@ -56,7 +58,7 @@ namespace Back.Application.UseCases.Auth
                 Id = Guid.NewGuid(),
                 IdentityUserId = user.Id,
                 Code = codigo,
-                ExpiresAtUtc = DateTime.UtcNow.AddHours(24)
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(10)
             });
             await _repo.SaveChangesAsync();
 

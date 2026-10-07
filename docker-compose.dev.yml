@@ -10,7 +10,7 @@ services:
         BUILDTIME: dev
     container_name: horas-discentes-frontend-dev
     ports:
-      - "${PORT_MACHINE_FRONTEND}:3000"
+      - "127.0.0.1:${PORT_MACHINE_FRONTEND}:3000"
     environment:
       - INTERNAL_API_URL=http://backend:5000/api
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
@@ -29,7 +29,7 @@ services:
       dockerfile: Dockerfile
     container_name: horas-discentes-backend-dev
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
@@ -81,7 +81,7 @@ services:
     image: postgres:15
     container_name: horas-discentes-db-dev
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -100,8 +100,8 @@ services:
     image: minio/minio:latest
     container_name: horas-discentes-minio-dev
     ports:
-      - "9002:9000"
-      - "9001:9001"
+      - "127.0.0.1:9002:9000"
+      - "127.0.0.1:9001:9001"
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}

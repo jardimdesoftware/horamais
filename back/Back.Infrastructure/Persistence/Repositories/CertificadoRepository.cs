@@ -41,6 +41,20 @@ public class CertificadoRepository : ICertificadoRepository
         return await query.AsNoTracking().ToListAsync();
     }
 
+    public async Task<IEnumerable<Certificado>> GetByCourseAsync(Guid cursoId, StatusCertificado? status, Guid? alunoId)
+    {
+        var query = _context.Certificados
+            .Include(c => c.AlunoAtividade)
+                .ThenInclude(aa => aa!.Atividade)
+            .Where(c => c.AlunoAtividade!.Aluno!.Turma!.CursoId == cursoId);
+
+        if (status.HasValue)
+            query = query.Where(c => c.Status == status);
+        if (alunoId.HasValue)
+            query = query.Where(c => c.AlunoAtividade!.AlunoId == alunoId);
+        return await query.AsNoTracking().ToListAsync();
+    }
+
     public async Task<Certificado?> GetByIdAsync(Guid id)
     {
         return await _context.Certificados

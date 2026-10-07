@@ -3,6 +3,7 @@ using Back.Domain.Entities.Auth;
 using Back.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Back.Infrastructure.Persistence.Repositories
@@ -20,8 +21,9 @@ namespace Back.Infrastructure.Persistence.Repositories
         {
             var now = System.DateTime.UtcNow;
             return await _ctx.ResetPasswordCodes
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.IdentityUserId == identityUserId && !x.Used && x.ExpiresAtUtc > now);
+                .Where(x => x.IdentityUserId == identityUserId && !x.Used && x.ExpiresAtUtc > now)
+                .OrderByDescending(x => x.CreatedAtUtc)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<ResetPasswordCode?> GetByUserAndCodeAsync(string identityUserId, string code)

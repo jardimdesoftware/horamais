@@ -27,11 +27,21 @@ namespace Back.Application.UseCases.Auth
         {
             var user = await _identityLookup.GetByEmailAsync(dto.Email);
             if (user == null)
-                return new ResetPasswordResponseDto(); // resposta neutra
-
-            var record = await _repo.GetByUserAndCodeAsync(user.Id, dto.Code);
-            if (record == null || record.Used || record.ExpiresAtUtc <= DateTime.UtcNow)
                 throw new InvalidOperationException("Código inválido ou expirado.");
+            if (await _userManager.IsInRoleAsync(user, "ALUNO"))
+                throw new InvalidOperationException("Código inválido ou expirado.");
+
+            var record = await _repo.GetActiveByUserAsync(user.Id);
+            if (record == null || record.Attempts >= 5)
+                throw new InvalidOperationException("Código inválido ou expirado.");
+
+            if (record.Code != dto.Code)
+            {
+                record.Attempts++;
+                await _repo.UpdateAsync(record);
+                await _repo.SaveChangesAsync();
+                throw new InvalidOperationException("Código inválido ou expirado.");
+            }
 
             var result = await _userManager.ResetPasswordAsync(user, record.IdentityResetToken, dto.NewPassword);
             if (!result.Succeeded)

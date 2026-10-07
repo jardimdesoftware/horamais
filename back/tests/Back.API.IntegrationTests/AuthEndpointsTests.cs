@@ -4,6 +4,8 @@ using System.Net.Http.Json;
 using Back.Application.DTOs.Auth;
 
 using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Back.API.IntegrationTests;
 
@@ -77,5 +79,34 @@ public class AuthEndpointsTests
             new { registrationTicket = "invalid", nome = "Aluno", matricula = "20231ewbj2157", turmaCodigo = "ADS2B7" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CadastroAlunoComSenha_EstaDescontinuado()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.PostAsJsonAsync("/api/aluno", new
+        {
+            nome = "Aluno",
+            email = "aluno@discente.ifpe.edu.br",
+            matricula = "20231ewbj2157",
+            senha = "Senha@123",
+            turmaCodigo = "ADS2B7"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Gone);
+    }
+
+    [Fact]
+    public async Task AlterarSecurityStamp_RevogaJwtAnterior()
+    {
+        var client = await _factory.CreateAdminClientAsync();
+        using var scope = _factory.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var admin = await users.FindByEmailAsync(CustomWebApplicationFactory.AdminEmail);
+        await users.UpdateSecurityStampAsync(admin!);
+
+        (await client.GetAsync("/api/curso")).StatusCode
+            .Should().Be(HttpStatusCode.Unauthorized);
     }
 }

@@ -41,6 +41,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         Environment.SetEnvironmentVariable("Jwt__Audience", "HoraMaisUsuarios");
         Environment.SetEnvironmentVariable("CORS_ALLOWED_ORIGIN", "http://localhost:3000");
         Environment.SetEnvironmentVariable("Authentication__Google__ClientId", "teste-client-id.apps.googleusercontent.com");
+        Environment.SetEnvironmentVariable("FileStorage__Endpoint", "http://localhost:9000");
+        Environment.SetEnvironmentVariable("FileStorage__AccessKey", "integration-test");
+        Environment.SetEnvironmentVariable("FileStorage__SecretKey", "integration-test-secret");
+        Environment.SetEnvironmentVariable("FileStorage__BucketName", "certificados");
 
         // Admin: criado pelo AdminSeeder no boot.
         Environment.SetEnvironmentVariable("ADMIN_EMAIL", AdminEmail);

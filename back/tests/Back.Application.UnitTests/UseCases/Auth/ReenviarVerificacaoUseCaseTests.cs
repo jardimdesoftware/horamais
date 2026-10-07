@@ -85,7 +85,7 @@ public class ReenviarVerificacaoUseCaseTests
     public async Task Deve_Invalidar_Codigo_Ativo_Anterior()
     {
         var user = new IdentityUser { Id = "1", Email = "a@b.com", EmailConfirmed = false };
-        var active = new EmailVerificationCode { IdentityUserId = user.Id, Code = "111111", Used = false };
+        var active = new EmailVerificationCode { IdentityUserId = user.Id, Code = "111111", Used = false, CreatedAtUtc = DateTime.UtcNow.AddMinutes(-2) };
 
         _identityLookup.Setup(x => x.GetByEmailAsync(user.Email!)).ReturnsAsync(user);
         _repo.Setup(x => x.GetActiveByUserAsync(user.Id)).ReturnsAsync(active);

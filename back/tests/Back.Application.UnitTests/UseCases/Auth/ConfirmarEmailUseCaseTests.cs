@@ -31,7 +31,7 @@ public class ConfirmarEmailUseCaseTests
         var user = new IdentityUser { Id = "1", Email = "a@b.com", EmailConfirmed = false };
 
         _identity.Setup(i => i.GetByEmailAsync(user.Email!)).ReturnsAsync(user);
-        _repo.Setup(r => r.GetByUserAndCodeAsync(user.Id, "000000"))
+        _repo.Setup(r => r.GetActiveByUserAsync(user.Id))
             .ReturnsAsync((EmailVerificationCode?)null);
 
         var useCase = CreateUseCase();
@@ -58,7 +58,7 @@ public class ConfirmarEmailUseCaseTests
         };
 
         _identity.Setup(i => i.GetByEmailAsync(user.Email!)).ReturnsAsync(user);
-        _repo.Setup(r => r.GetByUserAndCodeAsync(user.Id, record.Code)).ReturnsAsync(record);
+        _repo.Setup(r => r.GetActiveByUserAsync(user.Id)).ReturnsAsync((EmailVerificationCode?)null);
 
         var useCase = CreateUseCase();
 
@@ -84,7 +84,7 @@ public class ConfirmarEmailUseCaseTests
         };
 
         _identity.Setup(i => i.GetByEmailAsync(user.Email!)).ReturnsAsync(user);
-        _repo.Setup(r => r.GetByUserAndCodeAsync(user.Id, record.Code)).ReturnsAsync(record);
+        _repo.Setup(r => r.GetActiveByUserAsync(user.Id)).ReturnsAsync(record);
         _userManager.Setup(u => u.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
 
         var useCase = CreateUseCase();
@@ -103,7 +103,7 @@ public class ConfirmarEmailUseCaseTests
     }
 
     [Fact]
-    public async Task Deve_Ser_Idempotente_Quando_Ja_Confirmado()
+    public async Task Deve_Rejeitar_Quando_Ja_Confirmado()
     {
         var user = new IdentityUser { Id = "1", Email = "a@b.com", EmailConfirmed = true };
 
@@ -111,14 +111,15 @@ public class ConfirmarEmailUseCaseTests
 
         var useCase = CreateUseCase();
 
-        var result = await useCase.ExecuteAsync(new ConfirmEmailRequestDto
+        var act = async () => await useCase.ExecuteAsync(new ConfirmEmailRequestDto
         {
             Email = user.Email!,
             Code = "123456"
         });
 
-        result.Should().NotBeNull();
-        _repo.Verify(r => r.GetByUserAndCodeAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Código inválido ou expirado.");
+        _repo.Verify(r => r.GetActiveByUserAsync(It.IsAny<string>()), Times.Never);
         _userManager.Verify(u => u.UpdateAsync(It.IsAny<IdentityUser>()), Times.Never);
     }
 }

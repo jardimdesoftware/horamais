@@ -1,5 +1,6 @@
 ﻿using Back.Application.DTOs.Aluno;
 using Back.Application.UseCases.Aluno;
+using Back.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -10,7 +11,6 @@ namespace Back.API.Controllers;
 [Route("api/[controller]")]
 public class AlunoController : ControllerBase
 {
-    private readonly CreateAlunoUseCase _create;
     private readonly GetAlunoByIdUseCase _getById;
     private readonly DeleteAlunoUseCase _delete;
     private readonly ToggleAlunoStatusUseCase _toggle;
@@ -22,8 +22,8 @@ public class AlunoController : ControllerBase
     private readonly MarcarDownloadRelatorioUseCase _marcarDownloadRelatorio;
     private readonly UpdateAlunoUseCase _update;
     private readonly GetAlunosEmRiscoUseCase _getEmRisco;
+    private readonly ResourceAuthorizationService _access;
     public AlunoController(
-        CreateAlunoUseCase create,
         GetAlunoByIdUseCase getById,
         DeleteAlunoUseCase delete,
         ToggleAlunoStatusUseCase toggle,
@@ -34,9 +34,9 @@ public class AlunoController : ControllerBase
         ContarPendenciasDownloadUseCase contarPendenciasDownload,
         MarcarDownloadRelatorioUseCase marcarDownloadRelatorio,
         UpdateAlunoUseCase update,
-        GetAlunosEmRiscoUseCase getEmRisco)
+        GetAlunosEmRiscoUseCase getEmRisco,
+        ResourceAuthorizationService access)
     {
-        _create = create;
         _getById = getById;
         _delete = delete;
         _toggle = toggle;
@@ -48,21 +48,19 @@ public class AlunoController : ControllerBase
         _marcarDownloadRelatorio = marcarDownloadRelatorio;
         _update = update;
         _getEmRisco = getEmRisco;
+        _access = access;
     }
 
     /// <summary>
-    /// Cadastra um novo aluno.
+    /// Informa que o cadastro com senha foi descontinuado.
     /// </summary>
-    /// <remarks>Requer permissão de COORDENADOR.</remarks>
-    /// <param name="request">Dados do aluno a ser criado.</param>
-    /// <response code="201">Aluno criado com sucesso.</response>
-    /// <response code="400">Dados inválidos ou erro de validação.</response>
+    /// <remarks>Alunos se cadastram com Google em /api/auth/google-register.</remarks>
+    /// <response code="410">Cadastro com senha indisponível.</response>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> Criar([FromBody] CreateAlunoRequest request)
+    public IActionResult Criar()
     {
-        var result = await _create.ExecuteAsync(request);
-        return CreatedAtAction(nameof(ObterPorId), new { id = result.Id }, result);
+        return StatusCode(StatusCodes.Status410Gone, new { mensagem = "O cadastro de alunos é feito exclusivamente pelo Google." });
     }
 
     /// <summary>
@@ -76,6 +74,7 @@ public class AlunoController : ControllerBase
     [Authorize(Roles = "COORDENADOR")]
     public async Task<IActionResult> ObterPorId(Guid id)
     {
+        await _access.EnsureAlunoAsync(User, id);
         var aluno = await _getById.ExecuteAsync(id);
         return Ok(aluno);
     }
@@ -93,6 +92,8 @@ public class AlunoController : ControllerBase
     [Authorize(Roles = "COORDENADOR")]
     public async Task<IActionResult> Atualizar(Guid id, [FromBody] UpdateAlunoRequest request)
     {
+        await _access.EnsureAlunoAsync(User, id);
+        await _access.EnsureTurmaAsync(User, request.TurmaId.ToString());
         var result = await _update.ExecuteAsync(id, request);
         return Ok(result);
     }
@@ -107,6 +108,7 @@ public class AlunoController : ControllerBase
     [Authorize(Roles = "COORDENADOR")]
     public async Task<IActionResult> Deletar(Guid id)
     {
+        await _access.EnsureAlunoAsync(User, id);
         await _delete.ExecuteAsync(id);
         return NoContent();
     }
@@ -121,6 +123,7 @@ public class AlunoController : ControllerBase
     [Authorize(Roles = "COORDENADOR")]
     public async Task<IActionResult> AtivarDesativar(Guid id)
     {
+        await _access.EnsureAlunoAsync(User, id);
         await _toggle.ExecuteAsync(id);
         return NoContent();
     }
@@ -135,6 +138,7 @@ public class AlunoController : ControllerBase
     [Authorize(Roles = "COORDENADOR")]
     public async Task<IActionResult> ObterDetalhado(Guid id)
     {
+        await _access.EnsureAlunoAsync(User, id);
         var aluno = await _getDetalhado.ExecuteAsync(id);
         return Ok(aluno);
     }
@@ -148,7 +152,8 @@ public class AlunoController : ControllerBase
     [Authorize(Roles = "COORDENADOR")]
     public async Task<IActionResult> ListarResumo()
     {
-        var result = await _getResumo.ExecuteAsync();
+        var cursoId = await _access.CoordinatorCourseIdAsync(User);
+        var result = await _getResumo.ExecuteAsync(cursoId);
         return Ok(result);
     }
 
@@ -260,7 +265,8 @@ public class AlunoController : ControllerBase
         if (percentualMaximo < 0 || percentualMaximo > 100)
             return BadRequest("percentualMaximo deve estar entre 0 e 100.");
 
-        var result = await _getEmRisco.ExecuteAsync(percentualMaximo);
+        var cursoId = await _access.CoordinatorCourseIdAsync(User);
+        var result = await _getEmRisco.ExecuteAsync(percentualMaximo, cursoId);
         return Ok(result);
     }
 }

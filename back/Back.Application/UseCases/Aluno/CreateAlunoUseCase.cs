@@ -120,7 +120,7 @@ public class CreateAlunoUseCase
 
         await _alunoAtividadeRepo.AddRangeAsync(alunoAtividades);
 
-        // Gera e envia o código de verificação de e-mail (validade de 24h).
+        // Gera e envia o código de verificação de e-mail (validade de 10 minutos).
         if (!googleVerified)
         {
             var codigo = GerarCodigoSeisDigitos();
@@ -129,7 +129,7 @@ public class CreateAlunoUseCase
                 Id = Guid.NewGuid(),
                 IdentityUserId = userId,
                 Code = codigo,
-                ExpiresAtUtc = DateTime.UtcNow.AddHours(24)
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(10)
             });
             await _verificationRepo.SaveChangesAsync();
 

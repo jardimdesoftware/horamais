@@ -21,7 +21,17 @@ public class GetCertificadosUseCase
     {
         var certificados = await _repo.GetAsync(status, alunoId);
 
-        return certificados.Select(c => new CertificadoResponse(
+        return Map(certificados);
+    }
+
+    public async Task<IEnumerable<CertificadoResponse>> ExecuteAsync(StatusCertificado? status, Guid? alunoId, Guid cursoId)
+    {
+        var certificados = await _repo.GetByCourseAsync(cursoId, status, alunoId);
+        return Map(certificados);
+    }
+
+    private static IEnumerable<CertificadoResponse> Map(IEnumerable<Back.Domain.Entities.Certificado.Certificado> certificados) =>
+        certificados.Select(c => new CertificadoResponse(
             c.Id,
             c.TituloAtividade!,
             c.Instituicao!,
@@ -43,5 +53,4 @@ public class GetCertificadosUseCase
             c.CargaHorariaOriginal,
             c.CargaHorariaCorrigida
         ));
-    }
 }

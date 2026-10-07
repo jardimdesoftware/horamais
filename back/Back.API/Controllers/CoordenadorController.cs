@@ -2,6 +2,7 @@
 using Back.Application.UseCases.Coordenador;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Back.API.Controllers;
@@ -67,6 +68,7 @@ public class CoordenadorController : ControllerBase
     /// <returns>Dados da conta criada</returns>
     [HttpPost("cadastrar")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [SwaggerOperation(
         Summary = "Cadastra um coordenador a partir de um convite.",
         Description = "Não requer autenticação. O token do convite é obrigatório.",

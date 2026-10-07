@@ -21,13 +21,14 @@ public class GetAlunosEmRiscoUseCase
         _limiteRepo = limiteRepo;
     }
 
-    public async Task<IEnumerable<AlunoEmRiscoResponse>> ExecuteAsync(double percentualMaximo = 100)
+    public async Task<IEnumerable<AlunoEmRiscoResponse>> ExecuteAsync(double percentualMaximo = 100, Guid? cursoId = null)
     {
         var alunos = await _alunoRepo.GetAllComTurmaEAtividadesAsync();
         var limites = (await _limiteRepo.GetAllAsync())
             .ToDictionary(l => l.CursoId);
 
         return alunos
+            .Where(a => !cursoId.HasValue || a.Turma?.CursoId == cursoId.Value)
             .Where(a => limites.ContainsKey(a.Turma!.CursoId))
             .Where(a => limites[a.Turma!.CursoId].MaximoHorasComplementar > 0)
             .Select(a =>

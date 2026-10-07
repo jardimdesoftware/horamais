@@ -18,6 +18,10 @@ const nextConfig = {
             value: 'nosniff'
           },
           {
+            key: 'Content-Security-Policy',
+            value: "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+          },
+          {
             key: 'X-Frame-Options',
             value: 'DENY'
           },

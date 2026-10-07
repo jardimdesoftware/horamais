@@ -61,7 +61,7 @@ public class ForgotPasswordUseCaseTests
     {
         var user = new IdentityUser { Id = "abc", Email = "user@ifpe.com" };
 
-        var active = new ResetPasswordCode { IdentityUserId = user.Id, Used = false };
+        var active = new ResetPasswordCode { IdentityUserId = user.Id, Used = false, CreatedAtUtc = DateTime.UtcNow.AddMinutes(-2) };
 
         _identityLookup.Setup(x => x.GetByEmailAsync(user.Email!))
             .ReturnsAsync(user);
@@ -105,5 +105,19 @@ public class ForgotPasswordUseCaseTests
             x => x.EnviarEmailAsync(user.Email!, It.IsAny<string>(), It.IsAny<string>()),
             Times.Once
         );
+    }
+
+    [Fact]
+    public async Task Nao_Reenvia_Codigo_Durante_Cooldown()
+    {
+        var user = new IdentityUser { Id = "abc", Email = "user@ifpe.com" };
+        var active = new ResetPasswordCode { IdentityUserId = user.Id, CreatedAtUtc = DateTime.UtcNow };
+        _identityLookup.Setup(x => x.GetByEmailAsync(user.Email!)).ReturnsAsync(user);
+        _repo.Setup(x => x.GetActiveByUserAsync(user.Id)).ReturnsAsync(active);
+
+        await CreateUseCase().ExecuteAsync(new ForgotPasswordRequestDto { Email = user.Email! });
+
+        _repo.Verify(x => x.AddAsync(It.IsAny<ResetPasswordCode>()), Times.Never);
+        _emailService.Verify(x => x.EnviarEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }

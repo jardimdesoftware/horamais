@@ -20,8 +20,6 @@ services:
   backend:
     image: "ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-backend:latest"
     pull_policy: always
-    ports:
-      - "${PORT_MACHINE_BACKEND}:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
@@ -65,8 +63,6 @@ services:
   db:
     image: postgres:15
     container_name: horas-discentes-db
-    ports:
-      - "${PORT_MACHINE_DB}:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -85,8 +81,6 @@ services:
   minio:
     image: minio/minio:latest
     container_name: horas-discentes-minio
-    ports:
-      - "9001:9001"
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}

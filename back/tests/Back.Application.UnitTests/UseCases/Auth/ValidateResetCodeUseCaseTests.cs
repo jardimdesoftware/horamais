@@ -18,7 +18,7 @@ public class ValidateResetCodeUseCaseTests
         => new ValidateResetCodeUseCase(_identity.Object, _repo.Object);
 
     [Fact]
-    public async Task Deve_Retornar_True_Quando_Email_Inexistente()
+    public async Task Deve_Retornar_False_Quando_Email_Inexistente()
     {
         _identity.Setup(x => x.GetByEmailAsync("x@x.com"))
             .ReturnsAsync((IdentityUser?)null);
@@ -28,7 +28,7 @@ public class ValidateResetCodeUseCaseTests
         var result = await useCase.ExecuteAsync(
             new ValidateCodeRequestDto { Email = "x@x.com", Code = "000000" });
 
-        result.Valid.Should().BeTrue();
+        result.Valid.Should().BeFalse();
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class ValidateResetCodeUseCaseTests
         _identity.Setup(x => x.GetByEmailAsync(user.Email!))
             .ReturnsAsync(user);
 
-        _repo.Setup(x => x.GetByUserAndCodeAsync(user.Id, "111111"))
+        _repo.Setup(x => x.GetActiveByUserAsync(user.Id))
             .ReturnsAsync((ResetPasswordCode?)null);
 
         var useCase = CreateUseCase();
@@ -66,7 +66,7 @@ public class ValidateResetCodeUseCaseTests
         _identity.Setup(x => x.GetByEmailAsync(user.Email!))
             .ReturnsAsync(user);
 
-        _repo.Setup(x => x.GetByUserAndCodeAsync(user.Id, record.Code))
+        _repo.Setup(x => x.GetActiveByUserAsync(user.Id))
             .ReturnsAsync(record);
 
         var useCase = CreateUseCase();
@@ -75,7 +75,22 @@ public class ValidateResetCodeUseCaseTests
             new ValidateCodeRequestDto { Email = user.Email!, Code = record.Code });
 
         result.Valid.Should().BeTrue();
+        record.Attempts.Should().Be(0);
+        _repo.Verify(x => x.UpdateAsync(record), Times.Never);
+    }
+
+    [Fact]
+    public async Task Codigo_Invalido_Consome_Tentativa()
+    {
+        var user = new IdentityUser { Id = "u1", Email = "a@b.com" };
+        var record = new ResetPasswordCode { IdentityUserId = user.Id, Code = "222222", ExpiresAtUtc = DateTime.UtcNow.AddMinutes(1) };
+        _identity.Setup(x => x.GetByEmailAsync(user.Email!)).ReturnsAsync(user);
+        _repo.Setup(x => x.GetActiveByUserAsync(user.Id)).ReturnsAsync(record);
+
+        var result = await CreateUseCase().ExecuteAsync(new ValidateCodeRequestDto { Email = user.Email!, Code = "111111" });
+
+        result.Valid.Should().BeFalse();
         record.Attempts.Should().Be(1);
-        _repo.Verify(x => x.UpdateAsync(record), Times.Once);
+        _repo.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 }

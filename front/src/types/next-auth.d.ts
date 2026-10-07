@@ -13,7 +13,6 @@ declare module 'next-auth' {
       cursoId?: string; // opcional
       turmaId?: string; // opcional
     } & DefaultSession['user'];
-    token: string;
   }
 
   interface User {

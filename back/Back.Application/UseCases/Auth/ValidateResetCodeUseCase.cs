@@ -21,21 +21,21 @@ namespace Back.Application.UseCases.Auth
         {
             var user = await _identityLookup.GetByEmailAsync(dto.Email);
             if (user == null)
-                return new ValidateCodeResponseDto { Valid = true, Message = "Se houver conta, o código será verificado." };
+                return new ValidateCodeResponseDto { Valid = false, Message = "Código inválido ou expirado." };
 
-            var record = await _repo.GetByUserAndCodeAsync(user.Id, dto.Code);
+            var record = await _repo.GetActiveByUserAsync(user.Id);
             if (record == null)
-                return new ValidateCodeResponseDto { Valid = false, Message = "Código inválido." };
+                return new ValidateCodeResponseDto { Valid = false, Message = "Código inválido ou expirado." };
 
-            if (record.Used)
-                return new ValidateCodeResponseDto { Valid = false, Message = "Código já utilizado." };
-
-            if (record.ExpiresAtUtc <= DateTime.UtcNow)
-                return new ValidateCodeResponseDto { Valid = false, Message = "Código expirado." };
-
-            record.Attempts += 1;
-            await _repo.UpdateAsync(record);
-            await _repo.SaveChangesAsync();
+            if (record.Attempts >= 5)
+                return new ValidateCodeResponseDto { Valid = false, Message = "Código inválido ou expirado." };
+            if (record.Code != dto.Code)
+            {
+                record.Attempts++;
+                await _repo.UpdateAsync(record);
+                await _repo.SaveChangesAsync();
+                return new ValidateCodeResponseDto { Valid = false, Message = "Código inválido ou expirado." };
+            }
 
             return new ValidateCodeResponseDto { Valid = true, Message = "Código válido." };
         }

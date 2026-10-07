@@ -1,5 +1,6 @@
 ﻿using Back.Application.DTOs.Turma;
 using Back.Application.UseCases.Turma;
+using Back.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -21,6 +22,7 @@ public class TurmaController : ControllerBase
     private readonly DeleteTurmaUseCase _delete;
     private readonly ToggleCodigoUseCase _toggleCodigo;
     private readonly ResetarCodigoUseCase _resetarCodigo;
+    private readonly ResourceAuthorizationService _access;
 
     public TurmaController(
         CreateTurmaUseCase create,
@@ -32,7 +34,8 @@ public class TurmaController : ControllerBase
         UpdateTurmaUseCase update,
         DeleteTurmaUseCase delete,
         ToggleCodigoUseCase toggleCodigo,
-        ResetarCodigoUseCase resetarCodigo)
+        ResetarCodigoUseCase resetarCodigo,
+        ResourceAuthorizationService access)
     {
         _create = create;
         _getAll = getAll;
@@ -44,6 +47,7 @@ public class TurmaController : ControllerBase
         _delete = delete;
         _toggleCodigo = toggleCodigo;
         _resetarCodigo = resetarCodigo;
+        _access = access;
     }
 
     /// <summary>
@@ -54,6 +58,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(TurmaResponse), StatusCodes.Status201Created)]
     public async Task<IActionResult> Criar([FromBody] CreateTurmaRequest request)
     {
+        await _access.EnsureCourseAsync(User, request.CursoId);
         var turma = await _create.ExecuteAsync(request);
         return CreatedAtAction(nameof(ObterPorId), new { id = turma.Id }, turma);
     }
@@ -71,6 +76,8 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Atualizar(string id, [FromBody] UpdateTurmaRequest request)
     {
+        await _access.EnsureTurmaAsync(User, id);
+        await _access.EnsureCourseAsync(User, request.CursoId);
         try
         {
             var turma = await _update.ExecuteAsync(id, request);
@@ -96,6 +103,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Deletar(string id)
     {
+        await _access.EnsureTurmaAsync(User, id);
         try
         {
             await _delete.ExecuteAsync(id);
@@ -116,7 +124,8 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TurmaResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListarTodas()
     {
-        var turmas = await _getAll.ExecuteAsync();
+        var cursoId = await _access.CoordinatorCourseIdAsync(User);
+        var turmas = await _getByCurso.ExecuteAsync(cursoId);
         return Ok(turmas);
     }
 
@@ -129,6 +138,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ObterPorId(string id)
     {
+        await _access.EnsureTurmaAsync(User, id);
         try
         {
             var turma = await _getById.ExecuteAsync(id);
@@ -149,6 +159,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ToggleCodigo(string id)
     {
+        await _access.EnsureTurmaAsync(User, id);
         try
         {
             var turma = await _toggleCodigo.ExecuteAsync(id);
@@ -169,6 +180,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ResetarCodigo(string id)
     {
+        await _access.EnsureTurmaAsync(User, id);
         try
         {
             var turma = await _resetarCodigo.ExecuteAsync(id);
@@ -205,6 +217,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TurmaAlunoResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListarAlunos(string id)
     {
+        await _access.EnsureTurmaAsync(User, id);
         try
         {
             var alunos = await _getAlunos.ExecuteAsync(id);
@@ -224,6 +237,7 @@ public class TurmaController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TurmaResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ObterPorCurso(Guid cursoId)
     {
+        await _access.EnsureCourseAsync(User, cursoId);
         var turmas = await _getByCurso.ExecuteAsync(cursoId);
         return Ok(turmas);
     }

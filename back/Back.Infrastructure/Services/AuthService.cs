@@ -37,8 +37,25 @@ public class AuthService : IAuthService
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto dto)
     {
         var identityUser = await _userManager.FindByEmailAsync(dto.Email);
-        if (identityUser == null || !await _userManager.CheckPasswordAsync(identityUser, dto.Senha))
+        if (identityUser == null || await _userManager.IsLockedOutAsync(identityUser))
             throw new UnauthorizedAccessException("Email ou senha inválidos.");
+
+        if (await _userManager.IsInRoleAsync(identityUser, "ALUNO"))
+            throw new UnauthorizedAccessException("Email ou senha inválidos.");
+
+        if (!identityUser.LockoutEnabled)
+        {
+            identityUser.LockoutEnabled = true;
+            await _userManager.UpdateAsync(identityUser);
+        }
+
+        if (!await _userManager.CheckPasswordAsync(identityUser, dto.Senha))
+        {
+            await _userManager.AccessFailedAsync(identityUser);
+            throw new UnauthorizedAccessException("Email ou senha inválidos.");
+        }
+
+        await _userManager.ResetAccessFailedCountAsync(identityUser);
 
         if (!identityUser.EmailConfirmed)
             throw new UnauthorizedAccessException("E-mail não verificado. Verifique sua caixa de entrada para confirmar o código de cadastro.");
@@ -206,6 +223,7 @@ public class AuthService : IAuthService
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim("nome", nome),
             new Claim("entidadeId", entidadeId.ToString()),
+            new Claim("security_stamp", user.SecurityStamp ?? string.Empty),
             new Claim(ClaimTypes.Role, role),
             new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiration).ToUnixTimeSeconds().ToString())
         };
