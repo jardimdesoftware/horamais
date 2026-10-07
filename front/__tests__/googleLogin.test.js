@@ -31,6 +31,7 @@ test('novo discente segue ao cadastro sem criar sessão ou receber token', async
   post.mockResolvedValue({
     data: {
       requiresRegistration: true,
+      registrationTicket: 'signed-ticket',
       nome: 'Aluno Teste',
       email: 'aluno@discente.ifpe.edu.br',
       role: null,
@@ -45,6 +46,7 @@ test('novo discente segue ao cadastro sem criar sessão ou receber token', async
   const redirect = new URL(result, 'http://localhost:3000');
   expect(redirect.pathname).toBe('/primeiroAcesso');
   expect(redirect.searchParams.get('email')).toBe('aluno@discente.ifpe.edu.br');
+  expect(redirect.hash).toBe('#ticket=signed-ticket');
   expect(user.accessToken).toBeUndefined();
 });
 
@@ -64,6 +66,28 @@ test('conta cadastrada recebe o token e perfil do backend', async () => {
   ).toBe(true);
   expect(user.accessToken).toBe('backend-token');
   expect(user.role).toBe('aluno');
+});
+
+test('cadastro pendente vai direto para a verificação sem criar sessão', async () => {
+  post.mockResolvedValue({
+    data: {
+      requiresVerification: true,
+      nome: 'Aluno',
+      email: 'aluno@discente.ifpe.edu.br',
+      role: null,
+      token: null
+    }
+  });
+  const user = {};
+  const result = await auth.callbacks.signIn({
+    account: { provider: 'google', id_token: 'test' },
+    user
+  });
+  const redirect = new URL(result, 'http://localhost:3000');
+  expect(redirect.pathname).toBe('/primeiroAcesso');
+  expect(redirect.searchParams.get('verify')).toBe('1');
+  expect(redirect.searchParams.get('email')).toBe('aluno@discente.ifpe.edu.br');
+  expect(user.accessToken).toBeUndefined();
 });
 
 test('domínio recusado redireciona para a tela de e-mail institucional', async () => {

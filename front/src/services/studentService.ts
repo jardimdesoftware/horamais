@@ -101,6 +101,23 @@ export const criarAluno = async (
   return response.data;
 };
 
+export interface CreateAlunoGoogleRequest {
+  registrationTicket: string;
+  nome: string;
+  matricula: string;
+  turmaCodigo: string;
+}
+
+export const criarAlunoGoogle = async (
+  dados: CreateAlunoGoogleRequest
+): Promise<CreateAlunoResponse> => {
+  const response = await api.post<CreateAlunoResponse>(
+    '/Auth/google-register',
+    dados
+  );
+  return response.data;
+};
+
 // Obter aluno por ID
 export const obterAlunoPorId = async (id: string): Promise<AlunoResponse> => {
   const response = await api.get<AlunoResponse>(`/Aluno/${id}`);

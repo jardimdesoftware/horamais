@@ -1,5 +1,6 @@
+import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
@@ -7,24 +8,41 @@ import { useCriarAluno } from '@/hooks/useCriarAluno';
 import { extractApiError } from '@/lib/apiError';
 import { confirmEmail, resendVerification } from '@/services/authRecovery';
 import { verificarTurmaExiste } from '@/services/classService';
+import { criarAlunoGoogle } from '@/services/studentService';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { firstAccessSchema, FirstAccessSchema } from '../schemas/schema';
+
+const subscribeToHash = (onChange: () => void) => {
+  window.addEventListener('hashchange', onChange);
+  return () => window.removeEventListener('hashchange', onChange);
+};
+
+const getRegistrationTicket = () =>
+  new URLSearchParams(window.location.hash.slice(1)).get('ticket') ?? '';
 
 export const useFirstAccess = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isGoogleFirstAccess = searchParams.get('google') === '1';
+  const isPendingVerification = searchParams.get('verify') === '1';
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(isPendingVerification ? 3 : 1);
   const [codigo, setCodigo] = useState('');
   const [turma, setTurma] = useState<{ codigo: string; nome: string } | null>(
     null
   );
   const [loading, setLoading] = useState(false);
+  const registrationTicket = useSyncExternalStore(
+    subscribeToHash,
+    getRegistrationTicket,
+    () => ''
+  );
 
   // E-mail do cadastro pendente e código de verificação (etapa 3)
-  const [emailCadastrado, setEmailCadastrado] = useState('');
+  const [emailCadastrado, setEmailCadastrado] = useState(
+    isPendingVerification ? (searchParams.get('email') ?? '') : ''
+  );
   const [codigoVerificacao, setCodigoVerificacao] = useState('');
 
   const { mutateAsync: criarAlunoAsync, isPending: isCriandoAluno } =
@@ -32,14 +50,19 @@ export const useFirstAccess = () => {
 
   const form = useForm<FirstAccessSchema>({
     resolver: zodResolver(firstAccessSchema),
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: { google: isGoogleFirstAccess }
   });
 
   useEffect(() => {
     if (!isGoogleFirstAccess) return;
-    // Dados da URL são apenas sugestões; o cadastro mantém a confirmação por e-mail.
-    form.setValue('email', searchParams.get('email') ?? '');
-    form.setValue('nome', searchParams.get('nome') ?? '');
+    // A URL só preenche a tela; o backend identifica o e-mail pelo ticket assinado.
+    form.setValue('email', searchParams.get('email') ?? '', {
+      shouldValidate: true
+    });
+    form.setValue('nome', searchParams.get('nome') ?? '', {
+      shouldValidate: true
+    });
   }, [form, isGoogleFirstAccess, searchParams]);
 
   const handleValidarCodigo = async () => {
@@ -73,14 +96,63 @@ export const useFirstAccess = () => {
     if (!turma) return;
 
     try {
-      await criarAlunoAsync({ ...data, turmaCodigo: turma.codigo });
+      if (isGoogleFirstAccess) {
+        if (!registrationTicket) {
+          toast.error(
+            'Cadastro com Google expirado. Entre com Google novamente.'
+          );
+          return;
+        }
+        setLoading(true);
+        await criarAlunoGoogle({
+          registrationTicket,
+          nome: data.nome,
+          matricula: data.matricula,
+          turmaCodigo: turma.codigo
+        });
+        toast.success('Cadastro concluído! Entrando com Google...');
+        await signIn('google', { callbackUrl: '/' });
+        return;
+      }
+
+      await criarAlunoAsync({
+        nome: data.nome,
+        email: data.email,
+        matricula: data.matricula,
+        senha: data.senha!,
+        turmaCodigo: turma.codigo
+      });
       setEmailCadastrado(data.email);
       toast.success(
         'Cadastro iniciado! Enviamos um código de verificação para o seu e-mail.'
       );
       setStep(3);
     } catch (err) {
-      toast.error(extractApiError(err, 'Erro ao cadastrar. Tente novamente.'));
+      const response = (err as { response?: { status?: number } })?.response;
+      const message = extractApiError(
+        err,
+        'Erro ao cadastrar. Tente novamente.'
+      );
+      if (isGoogleFirstAccess) {
+        toast.error(message);
+        return;
+      }
+      if (
+        response?.status === 502 ||
+        (response?.status === 422 && message.includes('already taken'))
+      ) {
+        setEmailCadastrado(data.email);
+        setStep(3);
+        toast.error(
+          response.status === 502
+            ? 'Cadastro criado, mas o código não foi enviado. Use “Reenviar código”.'
+            : 'Este cadastro já foi iniciado. Use o código enviado ou peça outro.'
+        );
+        return;
+      }
+      toast.error(message);
+    } finally {
+      if (isGoogleFirstAccess) setLoading(false);
     }
   };
 
@@ -122,6 +194,9 @@ export const useFirstAccess = () => {
 
   return {
     isGoogleFirstAccess,
+    registrationTicket,
+    restartGoogle: () => signIn('google', { callbackUrl: '/' }),
+    isPendingVerification,
     step,
     setStep,
     codigo,
