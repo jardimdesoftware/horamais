@@ -48,12 +48,14 @@ ENV NEXT_PUBLIC_REVISION=$REVISION
 ENV NEXT_PUBLIC_BUILDTIME=$BUILDTIME
 
 # Copia artefatos
-COPY --from=builder /app/.next ./.next
+COPY --from=builder --chown=node:node /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
 RUN npm ci --omit=dev --legacy-peer-deps --ignore-scripts --no-audit --no-fund \
     && npm cache clean --force
 
+
+USER node
 
 EXPOSE 3000
 CMD ["npm", "start"]

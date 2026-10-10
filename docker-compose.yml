@@ -50,7 +50,7 @@ services:
       - FileStorage__BucketName=certificados
       - FileStorage__UseSSL=false
     volumes:
-      - backend_data_protection_keys:/root/.aspnet/DataProtection-Keys
+      - backend_data_protection_keys:/home/app/.aspnet/DataProtection-Keys
     networks:
       - rede-back
     depends_on:

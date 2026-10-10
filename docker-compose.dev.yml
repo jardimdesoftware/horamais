@@ -57,7 +57,7 @@ services:
       - FileStorage__BucketName=certificados
       - FileStorage__UseSSL=false
     volumes:
-      - backend_data_protection_keys_dev:/root/.aspnet/DataProtection-Keys
+      - backend_data_protection_keys_dev:/home/app/.aspnet/DataProtection-Keys
       # Persiste os logs do backend no host para inspeção
       - ./logs/backend:/app/logs
     networks:
