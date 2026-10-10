@@ -12,6 +12,12 @@ para o histórico completo. O procedimento de atualização está em
 
 ## Não lançado
 
+### Segurança
+
+- **Backend e frontend:** processos das imagens finais executados sem root,
+  com migração das permissões do volume de chaves do backend
+  ([#488](https://github.com/jardimdesoftware/horamais/issues/488)).
+
 ### Adições
 
 - **Documentação:** histórico de mudanças e orientações para atualizá-lo a cada
