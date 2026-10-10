@@ -1,0 +1,62 @@
+name: Security gates
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sast:
+    name: SAST
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test security gate policy
+        run: node --test scripts/security/*.test.mjs
+      - name: Scan C# and TypeScript with Semgrep
+        run: |
+          mkdir -p artifacts/security
+          docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:1.180.0 \
+            semgrep scan --config p/default --strict --disable-nosem --metrics off \
+            --exclude '**/node_modules/**' --exclude '**/bin/**' --exclude '**/obj/**' \
+            --json-output artifacts/security/semgrep.json back front > artifacts/security/semgrep.log 2>&1
+      - name: Enforce SAST policy and sanitize report
+        if: always()
+        run: node scripts/security/gate.mjs semgrep artifacts/security/semgrep.json artifacts/security/sast-summary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sast-${{ github.workflow }}-${{ github.run_id }}
+          path: artifacts/security/sast-summary.json
+          if-no-files-found: error
+          retention-days: 14
+
+  dast:
+    name: DAST
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Scan disposable application with ZAP
+        run: node scripts/security/dast.mjs
+      - name: Remove disposable stack
+        if: always()
+        run: docker compose -p horamais-dast -f docker-compose.security.yml down --volumes --remove-orphans
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dast-${{ github.workflow }}-${{ github.run_id }}
+          path: |
+            artifacts/security/dast-summary.json
+            artifacts/security/dast-diagnostics.log
+          if-no-files-found: error
+          retention-days: 14
