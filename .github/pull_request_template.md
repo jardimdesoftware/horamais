@@ -29,6 +29,7 @@
 - [ ] Não quebrei nenhuma funcionalidade existente
 - [ ] O código está limpo e sem console.log / debug desnecessário
 - [ ] Atualizei a documentação, se necessário
+- [ ] Atualizei o CHANGELOG.md em “Não lançado” ou justifiquei a dispensa no PR
 
 ---
 
