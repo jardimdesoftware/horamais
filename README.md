@@ -95,6 +95,11 @@ vinculadas a `127.0.0.1` para permitir acesso local sem exposição na rede.
 
 ### Imagens Docker AMD64 e ARM64
 
+SAST e DAST devem passar antes da publicação das imagens. O Trivy bloqueia
+vulnerabilidades altas e críticas em cada arquitetura, inclusive sem correção
+disponível. Consulte a [política de segurança do CI/CD](docs/seguranca-ci.md)
+para cobertura, relatórios e reprodução dos scans.
+
 Os workflows de frontend e backend geram imagens para `linux/amd64` e
 `linux/arm64` em runners nativos. Cada imagem é verificada pelo Trivy antes de
 ser enviada ao GitHub Container Registry (GHCR). Após as duas arquiteturas

@@ -12,6 +12,12 @@ para o histórico completo. O procedimento de atualização está em
 
 ## Não lançado
 
+### Segurança
+
+- **CI/CD:** gates de SAST e DAST antes da publicação e bloqueio de
+  vulnerabilidades HIGH/CRITICAL pelo Trivy em AMD64 e ARM64, incluindo achados
+  sem correção disponível ([#481](https://github.com/jardimdesoftware/horamais/issues/481)).
+
 ### Adições
 
 - **Documentação:** histórico de mudanças e orientações para atualizá-lo a cada
