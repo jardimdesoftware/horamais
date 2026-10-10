@@ -216,6 +216,16 @@ jobs:
         run: |
           test "$(docker image inspect "$IMAGE_REF" --format '{{.Os}}/{{.Architecture}}')" = "linux/$EXPECTED_ARCH"
 
+      - name: Verify unprivileged backend runtime
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: |
+          docker run --rm --network none --entrypoint sh "$IMAGE_REF" -ec '
+            test "$(id -u)" -ne 0
+            test -w /app/logs
+            test -w /home/app/.aspnet/DataProtection-Keys
+          '
+
       - name: Trivy Scan
         uses: aquasecurity/trivy-action@master
         with:

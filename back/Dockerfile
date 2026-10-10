@@ -30,4 +30,11 @@ LABEL org.opencontainers.image.created=$BUILDTIME
 
 COPY --from=build /app/publish .
 
+# The .NET 8 runtime image provides the unprivileged app user (APP_UID).
+# Logs and persisted Data Protection keys are the only writable app paths.
+ENV HOME=/home/app
+RUN mkdir -p /app/logs /home/app/.aspnet/DataProtection-Keys \
+    && chown -R "$APP_UID:$APP_UID" /app/logs /home/app
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "Back.API.dll"]
