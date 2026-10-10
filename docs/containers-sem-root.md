@@ -33,10 +33,12 @@ Na VM Linux, no diretório da stack:
    docker volume inspect "$VOLUME" >/dev/null
    umask 077
    mkdir -p backups
+   chmod 700 backups
    docker run --rm \
      --mount "type=volume,src=$VOLUME,dst=/keys,readonly" \
      --mount "type=bind,src=$PWD/backups,dst=/backup" \
      busybox:1.36 sh -c 'tar -C /keys -cf /backup/backend-data-protection-keys.tar .'
+   chmod 600 backups/backend-data-protection-keys.tar
    ```
 
 3. Transfira a propriedade dos arquivos existentes para o UID/GID do usuário
