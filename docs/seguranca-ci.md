@@ -1,8 +1,9 @@
 # Gates de segurança no CI/CD
 
 Os workflows de frontend e backend chamam `security.yml` no mesmo commit que
-será compilado. O job de build/publicação depende de `security` e da preparação
-da versão; o manifest e a release dependem dos builds aprovados. Não há deploy
+será compilado. Builds e scans de imagem ainda executam se SAST/DAST reprovarem,
+para coletar todos os diagnósticos. O envio de imagens, o manifest e a release
+dependem dos gates aprovados. Não há deploy
 via SSH implementado ainda: a issue #483 deverá preservar essas dependências.
 
 ## Ferramentas e política de bloqueio
@@ -18,6 +19,10 @@ metadados. Não se trata de equivalência universal entre escalas: essa é a
 política conservadora adotada pelo projeto. Semgrep usa regras de registro
 atualizadas a cada execução, sem upload do código à plataforma e com métricas
 desativadas. A análise OSS não substitui revisão de autorização e lógica de negócio.
+Na auditoria remota também foram observados checks de Code Quality para C# e
+JavaScript/TypeScript. Eles não estão declarados nos workflows locais e sua
+configuração administrativa não pôde ser consultada; os gates deste documento
+são explícitos nas dependências da publicação.
 
 Erros de execução, timeout, relatório ausente/inválido, ausência de análise de
 C# ou TypeScript e falhas de autenticação do DAST bloqueiam a entrega. Nenhum
@@ -30,7 +35,9 @@ SAST e DAST também retornam 1 quando a política reprova.
 volumes de produção e com rede interna sem saída para a internet. As imagens
 da aplicação são construídas do checkout atual, com os mesmos Dockerfiles de
 produção. As credenciais são aleatórias por execução e não dependem de secrets
-de produção. SMTP é capturado pelo Mailpit e o armazenamento é descartável.
+de produção. SMTP é capturado pelo Mailpit e o armazenamento usa S3Mock
+descartável, somente para testes. Ele não valida permissões/assinaturas S3 e
+não substitui a validação do provedor real na migração da issue #479.
 
 O script `scripts/security/dast.mjs` aguarda a aplicação, verifica que a rota
 `/api/Curso` rejeita requisição anônima, obtém JWT pelo login real de um admin
