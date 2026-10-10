@@ -45,7 +45,6 @@ services:
       FileStorage__SecretKey: ${DAST_PASSWORD:-unset}
       FileStorage__BucketName: certificados
       FileStorage__UseSSL: 'false'
-    ports: ['127.0.0.1:15000:5000']
     depends_on:
       db:
         condition: service_healthy
@@ -62,7 +61,6 @@ services:
       NEXTAUTH_SECRET: ${DAST_JWT_KEY:-unset}
       GOOGLE_CLIENT_ID: unused-dast-client
       GOOGLE_CLIENT_SECRET: unused-dast-secret
-    ports: ['127.0.0.1:13000:3000']
     networks: [scan]
 
   zap:
@@ -84,9 +82,21 @@ services:
     environment:
       ZAP_AUTH_HEADER_VALUE: ${DAST_AUTH_HEADER:-unset}
       ZAP_AUTH_HEADER_SITE: backend
-    ports: ['127.0.0.1:18080:8080']
     networks: [scan]
+
+  # Internal-only networks do not publish host ports on recent Docker versions.
+  # Only this fixed-destination proxy joins the host-facing bridge.
+  gateway:
+    image: nginx:1.28-alpine
+    volumes:
+      - ./scripts/security/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - '127.0.0.1:15000:5000'
+      - '127.0.0.1:13000:3000'
+      - '127.0.0.1:18080:8080'
+    networks: [scan, control]
 
 networks:
   scan:
     internal: true
+  control:

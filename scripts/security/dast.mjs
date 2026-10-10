@@ -86,7 +86,7 @@ async function alerts() {
 
 try {
   console.log('DAST: building and starting isolated application');
-  await compose('up', '-d', '--build', 'db', 'storage', 'mail', 'backend', 'frontend');
+  await compose('up', '-d', '--build', 'db', 'storage', 'mail', 'backend', 'frontend', 'gateway');
   await ready('http://127.0.0.1:15000/swagger/v1/swagger.json');
   await ready('http://127.0.0.1:13000/');
   summary.stage = 'authentication';

@@ -33,6 +33,8 @@ SAST e DAST também retornam 1 quando a política reprova.
 
 `docker-compose.security.yml` cria um projeto exclusivo `horamais-dast`, sem
 volumes de produção e com rede interna sem saída para a internet. As imagens
+e o scanner ficam nessa rede; somente um proxy de destinos fixos conecta a
+rede interna ao runner, com portas publicadas em `127.0.0.1`. As imagens
 da aplicação são construídas do checkout atual, com os mesmos Dockerfiles de
 produção. As credenciais são aleatórias por execução e não dependem de secrets
 de produção. SMTP é capturado pelo Mailpit e o armazenamento usa S3Mock
