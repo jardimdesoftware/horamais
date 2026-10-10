@@ -32,7 +32,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sast-${{ github.workflow }}-${{ github.run_id }}
+          name: sast-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/security/sast-summary.json
           if-no-files-found: error
           retention-days: 14
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dast-${{ github.workflow }}-${{ github.run_id }}
+          name: dast-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             artifacts/security/dast-summary.json
             artifacts/security/dast-diagnostics.log

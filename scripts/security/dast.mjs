@@ -155,5 +155,6 @@ try {
   }
   diagnostics = diagnostics.replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED JWT]');
   writeFileSync(resolve(directory, 'dast-diagnostics.log'), diagnostics.slice(-200_000));
+  if (summary.blocked) console.error(diagnostics.slice(-4000));
   process.exitCode = summary.blocked ? 1 : 0;
 }
