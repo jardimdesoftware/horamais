@@ -51,7 +51,7 @@ async function poll(check, timeoutMs, description) {
 async function ready(url) {
   await poll(async () => {
     try { return (await request(url)).ok; } catch { return false; }
-  }, 180_000, 'application readiness');
+  }, 180_000, `application readiness at ${new URL(url).pathname}`);
 }
 
 async function zap(component, kind, operation, params = {}) {
@@ -136,23 +136,30 @@ try {
   if (!Array.isArray(urls) || !urls.some(url => url.startsWith('http://backend:5000/api/')) ||
       !urls.some(url => url.startsWith('http://frontend:3000/'))) throw new Error('Incomplete DAST coverage');
   Object.assign(summary, evaluateZap(await alerts()), { stage: 'complete', scannedUrls: urls.length });
-} catch {
+} catch (error) {
   summary.blocked = true;
-  summary.error = 'DAST failed or incomplete; inspect the failed stage and private local log';
+  summary.error = error instanceof Error ? error.message : 'DAST failed or incomplete';
   // Retain a sanitized partial report when the scanner is still available.
   try { summary.findings = evaluateZap(await alerts()).findings; } catch { /* No report available. */ }
 } finally {
   console.log(`DAST: ${summary.blocked ? 'BLOCKED' : 'PASSED'} (${summary.stage})`);
+  if (summary.blocked) {
+    try { await compose('logs', '--no-color', '--tail', '60', 'backend', 'frontend'); } catch { /* Best effort diagnostics. */ }
+  }
   try { await compose('down', '--volumes', '--remove-orphans'); } catch {
     summary.blocked = true;
     summary.cleanupFailed = true;
   }
-  writeFileSync(resolve(directory, 'dast-summary.json'), JSON.stringify(summary, null, 2));
-  // Compose/build diagnostics only; never publish ZAP messages or application logs.
+  let summaryText = JSON.stringify(summary, null, 2);
+  // This stack contains synthetic data only; redact generated credentials in diagnostics.
   let diagnostics = readFileSync(resolve(directory, 'dast-private.log'), 'utf8');
   for (const [key, value] of Object.entries(env)) {
-    if (key.startsWith('DAST_') && value) diagnostics = diagnostics.replaceAll(value, '[REDACTED]');
+    if (key.startsWith('DAST_') && value) {
+      diagnostics = diagnostics.replaceAll(value, '[REDACTED]');
+      summaryText = summaryText.replaceAll(value, '[REDACTED]');
+    }
   }
+  writeFileSync(resolve(directory, 'dast-summary.json'), summaryText);
   diagnostics = diagnostics.replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED JWT]');
   writeFileSync(resolve(directory, 'dast-diagnostics.log'), diagnostics.slice(-200_000));
   if (summary.blocked) console.error(diagnostics.slice(-4000));
