@@ -67,6 +67,9 @@ Esta aplicação permitirá que os estudantes cadastrem suas atividades extracur
 
 ## 📚 Documentação
 
+Consulte o [CHANGELOG](CHANGELOG.md) para o histórico de mudanças e o
+[guia de contribuição](CONTRIBUTING.md) para atualizar o histórico a cada release.
+
 ### Provisionamento e remediação de contas
 
 Defina `ADMIN_EMAIL` e uma `ADMIN_PASSWORD` única e forte antes do primeiro boot.
