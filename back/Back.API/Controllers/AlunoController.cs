@@ -56,6 +56,8 @@ public class AlunoController : ControllerBase
     /// </summary>
     /// <remarks>Alunos se cadastram com Google em /api/auth/google-register.</remarks>
     /// <response code="410">Cadastro com senha indisponível.</response>
+    // Endpoint legado sem autenticação ou mutação: responde sempre 410 Gone.
+    // nosemgrep: csharp.dotnet.security.mvc-missing-antiforgery.mvc-missing-antiforgery
     [HttpPost]
     [AllowAnonymous]
     public IActionResult Criar()
