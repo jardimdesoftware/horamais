@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 COPY . /src/
@@ -11,10 +11,9 @@ RUN dotnet restore "Back.sln"
 RUN dotnet publish "Back.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Etapa 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# The extra variant keeps ICU and timezone data required by the application.
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-extra
 WORKDIR /app
-
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 #Versionamento no runtime
 ARG VERSION=dev
