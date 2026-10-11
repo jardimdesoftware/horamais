@@ -7,6 +7,8 @@ on:
     paths:
       - "front/**"
       - ".github/workflows/**"
+      - "scripts/security/**"
+      - "docker-compose.security.yml"
 
   pull_request:
     branches:
@@ -20,6 +22,8 @@ on:
     paths:
       - "front/**"
       - ".github/workflows/**"
+      - "scripts/security/**"
+      - "docker-compose.security.yml"
 
   workflow_dispatch:
     inputs:
@@ -40,6 +44,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  security:
+    name: Security
+    if: github.event_name != 'pull_request' || github.event.action != 'closed' || github.event.pull_request.merged == true
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
+
   # --------------------------------------------------------------------
   # 0) TAG CREATION ----------------------------------------------------
   # --------------------------------------------------------------------
@@ -153,7 +164,9 @@ jobs:
             runner: ubuntu-24.04
           - arch: arm64
             runner: ubuntu-24.04-arm
-    needs: tag-creation
+    needs: [tag-creation, security]
+    # Collect image findings even when another scanner fails; publication stays gated.
+    if: ${{ !cancelled() && needs.tag-creation.result == 'success' }}
     env:
       CREATED_TAG: ${{ needs.tag-creation.outputs.created_tag }}
       REGISTRY: ghcr.io
@@ -285,7 +298,7 @@ jobs:
           retention-days: 14
 
       - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+        if: needs.security.result == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -293,7 +306,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Push scanned image
-        if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+        if: needs.security.result == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
         env:
           IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: docker push "$IMAGE_REF"
@@ -301,7 +314,7 @@ jobs:
   publish-manifest:
     name: Publish AMD64 and ARM64 manifest
     runs-on: ubuntu-latest
-    needs: [tag-creation, frontend-docker]
+    needs: [tag-creation, frontend-docker, security]
     if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     permissions:
       contents: read

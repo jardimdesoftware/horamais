@@ -6,7 +6,8 @@ coverage
 .cache
 npm-debug.log
 yarn-error.log
-.env*.local
+.env
+.env.*
 Dockerfile
 .dockerignore
 .git

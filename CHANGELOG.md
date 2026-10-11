@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **CI/CD:** gates de SAST e DAST antes da publicação e bloqueio de
+  vulnerabilidades HIGH/CRITICAL pelo Trivy em AMD64 e ARM64, incluindo achados
+  sem correção disponível ([#481](https://github.com/jardimdesoftware/horamais/issues/481)).
 - **Backend:** rota legada de cadastro de aluno por senha removida, eliminando
   o aviso de antiforgery sem exceção no SAST
   ([#491](https://github.com/jardimdesoftware/horamais/issues/491)).
