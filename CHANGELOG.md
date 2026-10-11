@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Frontend:** dependências `sharp` e `source-map-js` atualizadas e npm removido
+  da imagem de produção para tratar os seis achados altos do Trivy
+  ([#490](https://github.com/jardimdesoftware/horamais/issues/490)).
 - **Backend:** runtime migrado da imagem Debian para a variante oficial Alpine
   com ICU e dados de fuso horário para eliminar os achados altos/críticos da
   imagem-base ([#489](https://github.com/jardimdesoftware/horamais/issues/489)).

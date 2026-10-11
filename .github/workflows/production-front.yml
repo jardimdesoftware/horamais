@@ -231,18 +231,58 @@ jobs:
             test "$(id -u)" -ne 0
             mkdir -p /app/.next/cache
             test -w /app/.next/cache
+            test ! -e /usr/local/lib/node_modules/npm
+            ! command -v npm
           '
 
+      - name: Verify frontend startup without npm
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker run -d --name frontend-smoke -p 127.0.0.1:13000:3000 \
+            -e NEXTAUTH_URL=http://127.0.0.1:13000 \
+            -e NEXTAUTH_SECRET=frontend-smoke-secret \
+            "$IMAGE_REF"
+          trap 'docker rm -f frontend-smoke >/dev/null 2>&1 || true' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:13000/; then
+              break
+            fi
+            if [[ "$(docker inspect frontend-smoke --format '{{.State.Running}}')" != true ]] || (( attempt == 60 )); then
+              docker logs frontend-smoke
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Prepare security report directory
+        run: mkdir -p "${{ github.workspace }}/artifacts/security"
+
       - name: Trivy Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ steps.image.outputs.ref }}
-          format: table
-          exit-code: 1
-          ignore-unfixed: true
-          severity: CRITICAL
+          version: v0.70.0
+          scanners: vuln
+          format: json
+          output: ${{ github.workspace }}/artifacts/security/trivy.json
+          exit-code: '1'
+          ignore-unfixed: false
+          severity: HIGH,CRITICAL
         env:
           TRIVY_IMAGE_SRC: docker
+          TRIVY_IGNORE_UNFIXED: 'false'
+          TRIVY_IGNOREFILE: /dev/null
+
+      - name: Preserve vulnerability report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ env.IMAGE_NAME }}-${{ matrix.arch }}
+          path: ${{ github.workspace }}/artifacts/security/trivy.json
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
