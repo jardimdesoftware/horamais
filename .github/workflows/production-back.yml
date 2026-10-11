@@ -226,6 +226,52 @@ jobs:
             test -w /home/app/.aspnet/DataProtection-Keys
           '
 
+      - name: Verify backend startup with PostgreSQL
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker network create backend-smoke
+          cleanup() {
+            docker rm -f backend-smoke-api backend-smoke-db >/dev/null 2>&1 || true
+            docker network rm backend-smoke >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          docker run -d --name backend-smoke-db --network backend-smoke \
+            -e POSTGRES_DB=smoke -e POSTGRES_USER=smoke -e POSTGRES_PASSWORD=smoke-password \
+            postgres:15
+          for attempt in {1..60}; do
+            if docker exec backend-smoke-db pg_isready -U smoke -d smoke >/dev/null 2>&1; then
+              break
+            fi
+            if (( attempt == 60 )); then
+              docker logs backend-smoke-db
+              exit 1
+            fi
+            sleep 2
+          done
+
+          docker run -d --name backend-smoke-api --network backend-smoke \
+            -p 127.0.0.1:15000:5000 \
+            -e ASPNETCORE_ENVIRONMENT=Production \
+            -e ASPNETCORE_URLS=http://+:5000 \
+            -e 'ConnectionStrings__DefaultConnection=Host=backend-smoke-db;Port=5432;Database=smoke;Username=smoke;Password=smoke-password' \
+            -e JWT__Key=backend-smoke-key-at-least-32-characters \
+            -e JWT__Issuer=backend-smoke -e JWT__Audience=backend-smoke \
+            -e ADMIN_EMAIL=admin@smoke.invalid -e ADMIN_PASSWORD=Smoke-password-123! \
+            "$IMAGE_REF"
+          for attempt in {1..90}; do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:15000/swagger/v1/swagger.json; then
+              break
+            fi
+            if [[ "$(docker inspect backend-smoke-api --format '{{.State.Running}}')" != true ]] || (( attempt == 90 )); then
+              docker logs backend-smoke-api
+              exit 1
+            fi
+            sleep 2
+          done
+
       - name: Prepare security report directory
         run: mkdir -p "${{ github.workspace }}/artifacts/security"
 

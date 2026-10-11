@@ -50,6 +50,16 @@ Em 10/10/2026, o scan remoto da base com Trivy 0.70.0 (`--scanners vuln
 
 O digest de referência multiarquitetura observado foi
 `mcr.microsoft.com/dotnet/aspnet@sha256:2c3ffd0c71e7ae90c46f684dfa6a517d59382c521f84c8231b616235fac761d8`.
-Esses números descrevem **a base no momento do scan**, não substituem o
-relatório da imagem final. O workflow do backend preserva o JSON do Trivy
-por arquitetura e falha se a imagem final contiver HIGH ou CRITICAL.
+Esses números descrevem **a base no momento do scan**. A imagem final construída
+no PR #493 foi analisada na
+[execução 38097205656](https://github.com/jardimdesoftware/horamais/actions/runs/38097205656)
+com Trivy 0.70.0, incluindo os pacotes da aplicação:
+
+| Plataforma | Sistema detectado | HIGH | CRITICAL | Image ID final |
+| --- | --- | ---: | ---: | --- |
+| AMD64 | Alpine 3.24.2 | 0 | 0 | `sha256:6c4deee0395047a632d38bdd1d5939ee73d499de9c0ece9137a0294ad8ced472` |
+| ARM64 | Alpine 3.24.2 | 0 | 0 | `sha256:9ab2f92e63221811d4ea6100c4758d4c08aeba9f7a49856cfa16dedc7549d5c3` |
+
+O workflow preserva o JSON do Trivy por arquitetura e falha se a imagem
+final contiver HIGH ou CRITICAL. Também verifica a inicialização do backend
+com PostgreSQL descartável e uma requisição HTTP ao Swagger em cada arquitetura.
