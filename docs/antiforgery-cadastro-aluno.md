@@ -1,33 +1,24 @@
-# Triagem do aviso de antiforgery no cadastro legado (#491)
+# Remoção da rota legada de cadastro de aluno (#491)
 
-O Semgrep da #481 marcou `AlunoController.Criar` com a regra
-`csharp.dotnet.security.mvc-missing-antiforgery.mvc-missing-antiforgery`.
-O [relatório original](https://github.com/jardimdesoftware/horamais/actions/runs/38072243642/artifacts/11676528872)
+O Semgrep da #481 apontou falta de antiforgery em `AlunoController.Criar`,
+que atendia `POST /api/Aluno`. O
+[relatório original](https://github.com/jardimdesoftware/horamais/actions/runs/38072243642/artifacts/11676528872)
 classificou o achado como `WARNING`, não bloqueante.
 
-## Comportamento da rota
+A action tinha `[AllowAnonymous]`, ignorava o corpo e qualquer identidade e
+apenas retornava `410 Gone` com uma mensagem de descontinuação. Não alterava
+dados; portanto, aquele código não apresentava uma operação explorável via
+CSRF. Como a API não oferece mais cadastro por senha e o frontend chama
+`POST /api/auth/google-register`, manter essa rota somente para retornar um
+erro não traz benefício ao fluxo atual.
 
-- Método e caminho: `POST /api/Aluno`, definidos por `[HttpPost]` e
-  `[Route("api/[controller]")]`.
-- A action tem `[AllowAnonymous]`; não consulta `User`, cookies, token nem
-  qualquer parâmetro do pedido.
-- O corpo da action apenas retorna `410 Gone` com a mensagem de que o cadastro
-  por senha foi descontinuado. Não chama casos de uso, repositórios ou banco e
-  não altera estado.
-- O cadastro atual ocorre em `POST /api/auth/google-register`. Esta triagem
-  cobre somente a rota legada de `AlunoController`.
+A action e seus atributos foram removidos de `AlunoController`. O teste de
+integração agora verifica que `POST /api/aluno` retorna `404 Not Found`, em
+vez de `410 Gone`. O teste separado de `POST /api/auth/google-register`
+continua cobrindo a rota de cadastro atual. O smoke test da imagem final na
+CI também exige `404` para o POST removido em AMD64 e ARM64.
 
-Em `Program.cs`, a API configura JWT Bearer como esquema padrão de autenticação
-e desafio. `AddIdentity` registra suporte a cookies no aplicativo, mas esta
-action é anônima e não realiza nenhuma operação dependente de identidade.
-Mesmo que um navegador envie cookies automaticamente, a resposta desta rota
-é a mesma e não há ação autenticada a induzir. Portanto, a ausência de token
-antiforgery **nesta action** não cria um cenário de CSRF explorável no código
-atual. Isso não é uma conclusão sobre outras rotas POST.
-
-Foi adicionada uma anotação `nosemgrep` com o identificador completo da regra
-imediatamente antes de `[HttpPost]`, acompanhada do motivo. Ela limita a
-triagem a este achado; o restante do SAST permanece ativo. Se a rota voltar
-a alterar dados ou usar autenticação, a anotação deve ser retirada e a
-proteção CSRF reavaliada. O resultado do Semgrep será conferido novamente ao
-atualizar a branch da #481 com a `main`.
+Não foi adicionada nenhuma anotação `nosemgrep` nem desativada a regra. Ao
+atualizar a branch da #481 com a `main`, o SAST deve deixar de encontrar
+**esse ponto** porque a action não existe mais; os demais endpoints seguem
+sujeitos às mesmas regras.

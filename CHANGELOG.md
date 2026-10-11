@@ -14,8 +14,8 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
-- **Backend:** aviso de antiforgery no endpoint legado de cadastro de aluno
-  analisado e restrito à regra correspondente do SAST
+- **Backend:** rota legada de cadastro de aluno por senha removida, eliminando
+  o aviso de antiforgery sem exceção no SAST
   ([#491](https://github.com/jardimdesoftware/horamais/issues/491)).
 - **Frontend:** dependências `sharp` e `source-map-js` atualizadas e npm removido
   da imagem de produção para tratar os seis achados altos do Trivy

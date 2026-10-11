@@ -271,6 +271,8 @@ jobs:
             fi
             sleep 2
           done
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:15000/api/aluno)" = "404"
 
       - name: Prepare security report directory
         run: mkdir -p "${{ github.workspace }}/artifacts/security"
