@@ -32,6 +32,11 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Adições
 
+- **Armazenamento:** Garage substitui MinIO nos ambientes de produção e
+  desenvolvimento, com bucket persistente e credencial própria da aplicação.
+  Os objetos antigos do MinIO são descartados no corte
+  ([#479](https://github.com/jardimdesoftware/horamais/issues/479)).
+
 - **Documentação:** histórico de mudanças e orientações para atualizá-lo a cada
   contribuição e release ([#482](https://github.com/jardimdesoftware/horamais/issues/482)).
 

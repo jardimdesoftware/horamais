@@ -92,8 +92,11 @@ um procedimento administrativo controlado. A atualização invalida JWTs
 anteriores, exigindo novo login.
 
 Em produção, o Compose publica apenas o frontend. Backend, PostgreSQL e
-MinIO ficam na rede interna. No Compose de desenvolvimento, as portas são
+Garage ficam na rede interna. No Compose de desenvolvimento, as portas são
 vinculadas a `127.0.0.1` para permitir acesso local sem exposição na rede.
+Consulte a [configuração do Garage](docs/garage.md) antes do primeiro boot.
+A troca do serviço começa com um bucket vazio; os objetos do MinIO antigo
+serão descartados.
 
 ### Imagens Docker AMD64 e ARM64
 
