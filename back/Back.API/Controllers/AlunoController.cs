@@ -52,18 +52,6 @@ public class AlunoController : ControllerBase
     }
 
     /// <summary>
-    /// Informa que o cadastro com senha foi descontinuado.
-    /// </summary>
-    /// <remarks>Alunos se cadastram com Google em /api/auth/google-register.</remarks>
-    /// <response code="410">Cadastro com senha indisponível.</response>
-    [HttpPost]
-    [AllowAnonymous]
-    public IActionResult Criar()
-    {
-        return StatusCode(StatusCodes.Status410Gone, new { mensagem = "O cadastro de alunos é feito exclusivamente pelo Google." });
-    }
-
-    /// <summary>
     /// Obtém os dados de um aluno pelo ID.
     /// </summary>
     /// <remarks>Requer permissão de COORDENADOR.</remarks>

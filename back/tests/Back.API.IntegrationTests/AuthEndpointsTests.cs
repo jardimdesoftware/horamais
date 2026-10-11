@@ -82,7 +82,7 @@ public class AuthEndpointsTests
     }
 
     [Fact]
-    public async Task CadastroAlunoComSenha_EstaDescontinuado()
+    public async Task CadastroAlunoComSenha_NaoPossuiRota()
     {
         var client = _factory.CreateClient();
         var response = await client.PostAsJsonAsync("/api/aluno", new
@@ -94,7 +94,7 @@ public class AuthEndpointsTests
             turmaCodigo = "ADS2B7"
         });
 
-        response.StatusCode.Should().Be(HttpStatusCode.Gone);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
