@@ -17,6 +17,18 @@ para o histórico completo. O procedimento de atualização está em
 - **CI/CD:** gates de SAST e DAST antes da publicação e bloqueio de
   vulnerabilidades HIGH/CRITICAL pelo Trivy em AMD64 e ARM64, incluindo achados
   sem correção disponível ([#481](https://github.com/jardimdesoftware/horamais/issues/481)).
+- **Backend:** rota legada de cadastro de aluno por senha removida, eliminando
+  o aviso de antiforgery sem exceção no SAST
+  ([#491](https://github.com/jardimdesoftware/horamais/issues/491)).
+- **Frontend:** dependências `sharp` e `source-map-js` atualizadas e npm removido
+  da imagem de produção para tratar os seis achados altos do Trivy
+  ([#490](https://github.com/jardimdesoftware/horamais/issues/490)).
+- **Backend:** runtime migrado da imagem Debian para a variante oficial Alpine
+  com ICU e dados de fuso horário para eliminar os achados altos/críticos da
+  imagem-base ([#489](https://github.com/jardimdesoftware/horamais/issues/489)).
+- **Backend e frontend:** processos das imagens finais executados sem root,
+  com migração das permissões do volume de chaves do backend
+  ([#488](https://github.com/jardimdesoftware/horamais/issues/488)).
 
 ### Adições
 
