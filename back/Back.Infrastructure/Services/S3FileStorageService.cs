@@ -24,7 +24,8 @@ public class S3FileStorageService : IFileStorageService
         var config = new AmazonS3Config
         {
             ServiceURL = settings.Endpoint,
-            ForcePathStyle = true,  // obrigatório para MinIO
+            ForcePathStyle = true,
+            AuthenticationRegion = settings.Region,
         };
 
         _s3 = new AmazonS3Client(credentials, config);
@@ -32,8 +33,6 @@ public class S3FileStorageService : IFileStorageService
 
     public async Task<string> UploadAsync(IFormFile file, string objectKey)
     {
-        await EnsureBucketExistsAsync();
-
         using var stream = file.OpenReadStream();
 
         var request = new PutObjectRequest
@@ -78,16 +77,4 @@ public class S3FileStorageService : IFileStorageService
         }
     }
 
-    private async Task EnsureBucketExistsAsync()
-    {
-        var buckets = await _s3.ListBucketsAsync();
-        if (buckets.Buckets == null || !buckets.Buckets.Exists(b => b.BucketName == _bucketName))
-        {
-            await _s3.PutBucketAsync(new PutBucketRequest
-            {
-                BucketName = _bucketName,
-                UseClientRegion = true
-            });
-        }
-    }
 }
