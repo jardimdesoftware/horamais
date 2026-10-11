@@ -231,6 +231,8 @@ jobs:
             test "$(id -u)" -ne 0
             mkdir -p /app/.next/cache
             test -w /app/.next/cache
+            test ! -e /usr/local/lib/node_modules/npm
+            ! command -v npm
           '
 
       - name: Verify frontend startup without npm

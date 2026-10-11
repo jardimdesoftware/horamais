@@ -40,3 +40,18 @@ HIGH/CRITICAL, sem ignorar achados sem correção. Ele falha antes da publicaç�
 e preserva o relatório JSON por arquitetura. Também verifica que a imagem
 inicia sem npm e responde por HTTP. O DAST completo será revalidado quando a
 branch de gates de segurança da #481 for integrada.
+
+## Comparação da imagem construída
+
+Os artefatos do Trivy da
+[execução 38142453785](https://github.com/jardimdesoftware/horamais/actions/runs/38142453785)
+mostram o seguinte resultado em 11/10/2026:
+
+| Arquitetura | Antes: HIGH | Depois: HIGH | Depois: CRITICAL | Sistema final | Image ID final |
+| --- | ---: | ---: | ---: | --- | --- |
+| AMD64 | 6 | 0 | 0 | Alpine 3.24.2 | `sha256:9dafbb4fee8fc672d1b3a29ab9ca517a7143ecfea824f2f19672f0733a8686af` |
+| ARM64 | 6 | 0 | 0 | Alpine 3.24.2 | `sha256:aee33f1df1bcc24caaafeac741b09cdc5e8b093712ad36e97feb7472ce1c0bab` |
+
+Os dois jobs também passaram pelo lint, build, verificação de usuário sem root
+e inicialização do frontend com resposta HTTP. O gate segue válido para
+rebuilds futuros: se um pacote alto ou crítico reaparecer, a publicação falha.
