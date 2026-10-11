@@ -1,11 +1,12 @@
-# npm atualizado inclui a correção de segurança do node-tar.
 FROM node:22-alpine AS base
-RUN npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund \
-    && npm cache clean --force
 
 # Etapa de build
 FROM base AS builder
 WORKDIR /app
+
+# npm atualizado inclui a correção de segurança do node-tar durante o build.
+RUN npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund \
+    && npm cache clean --force
 
 # Versionamento
 ARG VERSION=dev
@@ -52,10 +53,11 @@ COPY --from=builder --chown=node:node /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
 RUN npm ci --omit=dev --legacy-peer-deps --ignore-scripts --no-audit --no-fund \
-    && npm cache clean --force
+    && npm cache clean --force \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /root/.npm
 
 
 USER node
 
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "node_modules/next/dist/bin/next", "start"]
