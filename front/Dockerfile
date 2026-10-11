@@ -1,12 +1,11 @@
 FROM node:22-alpine AS base
+# npm atualizado inclui a correção de segurança do node-tar durante a instalação.
+RUN npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund \
+    && npm cache clean --force
 
 # Etapa de build
 FROM base AS builder
 WORKDIR /app
-
-# npm atualizado inclui a correção de segurança do node-tar durante o build.
-RUN npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund \
-    && npm cache clean --force
 
 # Versionamento
 ARG VERSION=dev
