@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Backend:** runtime migrado da imagem Debian para a variante oficial Alpine
+  com ICU e dados de fuso horário para eliminar os achados altos/críticos da
+  imagem-base ([#489](https://github.com/jardimdesoftware/horamais/issues/489)).
 - **Backend e frontend:** processos das imagens finais executados sem root,
   com migração das permissões do volume de chaves do backend
   ([#488](https://github.com/jardimdesoftware/horamais/issues/488)).
