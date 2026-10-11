@@ -71,6 +71,8 @@ Consulte o [CHANGELOG](CHANGELOG.md) para o histórico de mudanças e o
 [guia de contribuição](CONTRIBUTING.md) para atualizar o histórico a cada release.
 Para atualizar instalações existentes para os contêineres sem root, siga a
 [migração dos volumes e permissões](docs/containers-sem-root.md).
+O [guia de deploy automático](docs/deploy-automatico.md) descreve a configuração
+da VM, os secrets do GitHub Actions e o procedimento de rollback.
 
 ### Provisionamento e remediação de contas
 

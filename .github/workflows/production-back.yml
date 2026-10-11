@@ -4,15 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "back/**"
-      - ".github/workflows/**"
-      - "scripts/security/**"
-      - "docker-compose.security.yml"
-      - "docker-compose.dev.yml"
-      - "docker-compose.yml"
-      - "garage.toml"
-      - "scripts/garage/**"
 
   pull_request:
     branches:
@@ -373,7 +364,7 @@ jobs:
 
       - name: Publish version manifest
         run: |
-          docker buildx imagetools create --tag "$IMAGE:$CREATED_TAG" \
+          docker buildx imagetools create --tag "$IMAGE:$CREATED_TAG" --tag "$IMAGE:sha-$GITHUB_SHA" \
             "$IMAGE:$BUILD_TAG-amd64" "$IMAGE:$BUILD_TAG-arm64"
 
       - name: Verify published platforms
