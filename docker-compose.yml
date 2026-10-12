@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: "ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-frontend:latest"
+    image: "${FRONTEND_IMAGE:-ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-frontend:latest}"
     pull_policy: always
     ports:
       - "${PORT_MACHINE_FRONTEND}:3000"
@@ -16,9 +16,15 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   backend:
-    image: "ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-backend:latest"
+    image: "${BACKEND_IMAGE:-ghcr.io/${GHCR_OWNER:-jardimdesoftware}/horas-discentes-backend:latest}"
     pull_policy: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -60,6 +66,12 @@ services:
       garage:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   db:
     image: postgres:15

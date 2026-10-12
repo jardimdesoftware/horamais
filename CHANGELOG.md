@@ -32,6 +32,10 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Adições
 
+- **Deploy:** orquestração automática da stack na VM após aprovação de ambos
+  os workflows de produção, com imagens fixadas por digest, verificação de
+  saúde e rollback em falha; ativação depende do provisionamento da VM
+  ([#483](https://github.com/jardimdesoftware/horamais/issues/483)).
 - **Armazenamento:** Garage substitui MinIO nos ambientes de produção e
   desenvolvimento, com bucket persistente e credencial própria da aplicação.
   Os objetos antigos do MinIO são descartados no corte
