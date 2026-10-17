@@ -32,6 +32,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Adições
 
+- **Backend e frontend:** administração de contas e atribuição direta de
+  coordenadores, inclusive antes do primeiro acesso com Google
+  ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 - **Armazenamento:** Garage substitui MinIO nos ambientes de produção e
   desenvolvimento, com bucket persistente e credencial própria da aplicação.
   Os objetos antigos do MinIO são descartados no corte
@@ -39,6 +42,12 @@ para o histórico completo. O procedimento de atualização está em
 
 - **Documentação:** histórico de mudanças e orientações para atualizá-lo a cada
   contribuição e release ([#482](https://github.com/jardimdesoftware/horamais/issues/482)).
+
+### Alterações
+
+- **Backend e frontend:** entrada somente com Google institucional; formulários
+  e endpoints legados de senha e convite deixam de atender no ambiente normal
+  ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
 

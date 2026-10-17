@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Back.API.Controllers;
 
@@ -25,6 +26,7 @@ public class AuthController : ControllerBase
     private readonly ResetPasswordUseCase _resetPasswordUseCase;
     private readonly ConfirmarEmailUseCase _confirmarEmailUseCase;
     private readonly ReenviarVerificacaoUseCase _reenviarVerificacaoUseCase;
+    private readonly IConfiguration _configuration;
 
     public AuthController(
         LoginUseCase loginUseCase,
@@ -34,7 +36,8 @@ public class AuthController : ControllerBase
         ValidateResetCodeUseCase validateResetCodeUseCase,
         ResetPasswordUseCase resetPasswordUseCase,
         ConfirmarEmailUseCase confirmarEmailUseCase,
-        ReenviarVerificacaoUseCase reenviarVerificacaoUseCase)
+        ReenviarVerificacaoUseCase reenviarVerificacaoUseCase,
+        IConfiguration configuration)
     {
         _loginUseCase = loginUseCase;
         _googleLoginUseCase = googleLoginUseCase;
@@ -44,7 +47,12 @@ public class AuthController : ControllerBase
         _resetPasswordUseCase = resetPasswordUseCase;
         _confirmarEmailUseCase = confirmarEmailUseCase;
         _reenviarVerificacaoUseCase = reenviarVerificacaoUseCase;
+        _configuration = configuration;
     }
+
+    private bool LegacyPasswordFlowsEnabled =>
+        _configuration.GetValue<bool>("Authentication:EnableLegacyPasswordFlows") &&
+        _configuration.GetValue<bool>("Testing:Enabled");
 
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponseDto), 200)]
@@ -52,6 +60,7 @@ public class AuthController : ControllerBase
     [SwaggerOperation(Summary = "Autenticar usuário", Description = "Realiza o login de um usuário com base nas credenciais informadas.")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
+        if (!LegacyPasswordFlowsEnabled) return NotFound();
         try
         {
             var result = await _loginUseCase.ExecuteAsync(dto);
@@ -94,6 +103,7 @@ public class AuthController : ControllerBase
     [SwaggerOperation(Summary = "Solicitar código de redefinição", Description = "Gera um código de 6 dígitos e envia por e-mail.")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
     {
+        if (!LegacyPasswordFlowsEnabled) return NotFound();
         var result = await _forgotPasswordUseCase.ExecuteAsync(dto);
         return Ok(result);
     }
@@ -103,6 +113,7 @@ public class AuthController : ControllerBase
     [SwaggerOperation(Summary = "Validar código", Description = "Valida o código de 6 dígitos enviado por e-mail.")]
     public async Task<IActionResult> ValidateCode([FromBody] ValidateCodeRequestDto dto)
     {
+        if (!LegacyPasswordFlowsEnabled) return NotFound();
         var result = await _validateResetCodeUseCase.ExecuteAsync(dto);
         return Ok(result);
     }
@@ -113,6 +124,7 @@ public class AuthController : ControllerBase
     [SwaggerOperation(Summary = "Redefinir senha", Description = "Redefine a senha usando o token do Identity associado ao código validado.")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
     {
+        if (!LegacyPasswordFlowsEnabled) return NotFound();
         try
         {
             var result = await _resetPasswordUseCase.ExecuteAsync(dto);
@@ -130,6 +142,7 @@ public class AuthController : ControllerBase
     [SwaggerOperation(Summary = "Confirmar e-mail", Description = "Confirma o e-mail de um cadastro pendente usando o código de 6 dígitos enviado por e-mail.")]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequestDto dto)
     {
+        if (!LegacyPasswordFlowsEnabled) return NotFound();
         try
         {
             var result = await _confirmarEmailUseCase.ExecuteAsync(dto);
@@ -146,6 +159,7 @@ public class AuthController : ControllerBase
     [SwaggerOperation(Summary = "Reenviar verificação", Description = "Reenvia o código de verificação de e-mail para um cadastro ainda pendente.")]
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequestDto dto)
     {
+        if (!LegacyPasswordFlowsEnabled) return NotFound();
         var result = await _reenviarVerificacaoUseCase.ExecuteAsync(dto);
         return Ok(result);
     }

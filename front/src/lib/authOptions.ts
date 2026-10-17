@@ -1,6 +1,5 @@
 import type { AuthOptions } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 
 import axios from 'axios';
@@ -20,7 +19,7 @@ function getApiUrl() {
 interface BackendUser {
   nome: string;
   email: string;
-  role: 'admin' | 'coordenador' | 'aluno';
+  role: 'admin' | 'coordenador' | 'aluno' | 'usuario';
   token: string;
 }
 
@@ -66,38 +65,6 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!
-    }),
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'text' },
-        password: { label: 'Senha', type: 'password' }
-      },
-      async authorize(credentials) {
-        try {
-          const apiUrl = getApiUrl();
-          const response = await axios.post<BackendUser>(
-            `${apiUrl}/auth/login`,
-            {
-              email: credentials?.email,
-              senha: credentials?.password
-            }
-          );
-
-          const user = response.data;
-          const userRole = user.role.toLowerCase();
-          return {
-            id: user.email,
-            sub: user.email,
-            name: user.nome,
-            email: user.email,
-            role: userRole as 'admin' | 'coordenador' | 'aluno',
-            accessToken: user.token
-          };
-        } catch (error) {
-          return null;
-        }
-      }
     })
   ],
   pages: {
@@ -156,6 +123,7 @@ export const authOptions: AuthOptions = {
           const reasons: Record<string, string> = {
             'O primeiro acesso com Google exige um e-mail @discente.ifpe.edu.br.':
               'GoogleDomainNotAllowed',
+            'Use um e-mail institucional do IFPE.': 'GoogleDomainNotAllowed',
             'Nenhuma conta encontrada para este e-mail. Faça o cadastro antes de entrar com o Google.':
               'GoogleAccountNotFound',
             'E-mail não verificado. Verifique sua caixa de entrada para confirmar o código de cadastro.':
@@ -208,7 +176,11 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       session.user.name = token.name as string;
       session.user.email = token.email as string;
-      session.user.role = token.role as 'admin' | 'coordenador' | 'aluno';
+      session.user.role = token.role as
+        | 'admin'
+        | 'coordenador'
+        | 'aluno'
+        | 'usuario';
 
       (session.user as any).entidadeId = token.entidadeId;
       (session.user as any).isNewPpc = token.isNewPpc;
