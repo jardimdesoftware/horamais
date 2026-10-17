@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IConviteCoordenadorRepository, ConviteCoordenadorRepository>();
         services.AddScoped<ICoordenadorRepository, CoordenadorRepository>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<UserAdministrationService>();
         services.AddScoped<IAtividadeRepository, AtividadeRepository>();
         services.AddScoped<IAlunoAtividadeRepository, AlunoAtividadeRepository>();
         services.AddScoped<ICertificadoRepository, CertificadoRepository>();

@@ -17,7 +17,7 @@ namespace Back.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "8.0.31")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -154,6 +154,19 @@ namespace Back.Infrastructure.Migrations
                     b.ToTable("Atividades");
                 });
 
+            modelBuilder.Entity("Back.Domain.Entities.Auth.AdminInitialization", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdminInitializations");
+                });
+
             modelBuilder.Entity("Back.Domain.Entities.Auth.EmailVerificationCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -222,6 +235,19 @@ namespace Back.Infrastructure.Migrations
                     b.HasIndex("IdentityUserId", "Code", "Used");
 
                     b.ToTable("ResetPasswordCodes", (string)null);
+                });
+
+            modelBuilder.Entity("Back.Domain.Entities.Auth.UserAccess", b =>
+                {
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("IdentityUserId");
+
+                    b.ToTable("UserAccesses");
                 });
 
             modelBuilder.Entity("Back.Domain.Entities.Campus.Campus", b =>
@@ -714,6 +740,15 @@ namespace Back.Infrastructure.Migrations
                     b.Navigation("Aluno");
 
                     b.Navigation("Atividade");
+                });
+
+            modelBuilder.Entity("Back.Domain.Entities.Auth.UserAccess", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithOne()
+                        .HasForeignKey("Back.Domain.Entities.Auth.UserAccess", "IdentityUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Back.Domain.Entities.Certificado.Certificado", b =>

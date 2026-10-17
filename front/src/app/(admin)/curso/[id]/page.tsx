@@ -1,10 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { CoordinatorInviteModal } from './_components/CoordinatorInviteModal';
 import { EditCourseModal } from './_components/EditCourseModal';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import {
@@ -30,7 +30,7 @@ import {
   CursoDetalhadoResponse,
   obterCursoPorId
 } from '@/services/courseService';
-import { faEdit, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function CourseDetailPage() {
@@ -44,7 +44,6 @@ export default function CourseDetailPage() {
     nome: string;
   } | null>(null);
 
-  const [isCoordModalOpen, setIsCoordModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
@@ -177,24 +176,16 @@ export default function CourseDetailPage() {
         ) : (
           <div className="max-w-xs">
             <Button
-              icon={faPlus}
-              onClick={() => setIsCoordModalOpen(true)}
+              asChild
               className="w-full bg-blue-700 hover:bg-blue-800 text-white"
             >
-              Adicionar Coordenador
+              <Link href={`/usuarios?cursoId=${cursoId}`}>
+                Atribuir coordenador
+              </Link>
             </Button>
           </div>
         )}
       </div>
-
-      <CoordinatorInviteModal
-        isOpen={isCoordModalOpen}
-        onClose={() => {
-          setIsCoordModalOpen(false);
-          loadData();
-        }}
-        cursoId={cursoId}
-      />
 
       {curso && (
         <EditCourseModal

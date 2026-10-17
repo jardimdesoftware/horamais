@@ -2,6 +2,7 @@
 using Back.Domain.Entities.Aluno;
 using Back.Domain.Entities.AlunoAtividade;
 using Back.Infrastructure.Persistence.Context;
+using Back.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -86,6 +87,7 @@ public class AlunoRepository : IAlunoRepository
     }
     public async Task DeleteComIdentityAsync(Guid alunoId)
     {
+        await using var transaction = await AccountManagementLock.AcquireAsync(_context);
         var aluno = await _context.Alunos.FirstOrDefaultAsync(a => a.Id == alunoId);
 
         if (aluno == null) return;
@@ -96,13 +98,16 @@ public class AlunoRepository : IAlunoRepository
             var identityUser = await _userManager.FindByIdAsync(aluno.IdentityUserId);
             if (identityUser != null)
             {
-                await _userManager.DeleteAsync(identityUser);
+                if (await _userManager.IsInRoleAsync(identityUser, "ADMIN"))
+                    throw new InvalidOperationException("Rebaixe o administrador na tela de usuários antes de excluir sua conta.");
+                UserAdministrationService.EnsureSuccess(await _userManager.DeleteAsync(identityUser));
             }
         }
 
         // Remove o aluno
         _context.Alunos.Remove(aluno);
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
     public async Task<Aluno?> GetByIdentityUserIdWithAtividadesAsync(string identityUserId)
     {

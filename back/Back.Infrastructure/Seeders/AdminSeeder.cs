@@ -16,7 +16,7 @@ public class AdminSeeder
         var senha = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(senha))
-            throw new Exception("ADMIN_EMAIL ou ADMIN_PASSWORD não configurado no .env");
+            return;
 
         var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser != null) return;
