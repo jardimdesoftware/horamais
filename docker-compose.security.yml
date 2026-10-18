@@ -34,6 +34,8 @@ services:
       JWT__Audience: horamais-dast
       ADMIN_EMAIL: admin@dast.invalid
       ADMIN_PASSWORD: ${DAST_PASSWORD:-unset}
+      Authentication__EnableLegacyPasswordFlows: 'true'
+      Testing__Enabled: 'true'
       CORS_ALLOWED_ORIGIN: http://frontend:3000
       Authentication__Google__ClientId: unused-dast-client
       EMAIL__Remetente: noreply@dast.invalid
