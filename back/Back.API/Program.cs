@@ -201,6 +201,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapControllers();
 app.MapHub<Back.API.Hubs.TurmaHub>("/hubs/turma");
 app.MapHub<Back.API.Hubs.CertificadoHub>("/hubs/certificado");

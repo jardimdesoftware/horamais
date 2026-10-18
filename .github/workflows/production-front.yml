@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "front/**"
-      - ".github/workflows/**"
-      - "scripts/security/**"
-      - "docker-compose.security.yml"
 
   pull_request:
     branches:
@@ -199,7 +194,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_API_URL: /api
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
@@ -222,7 +217,7 @@ jobs:
           push: false
           tags: ${{ steps.image.outputs.ref }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_API_URL=/api
             VERSION=${{ env.CREATED_TAG }}
             REVISION=${{ github.sha }}
             BUILDTIME=${{ steps.image.outputs.built_at }}
@@ -336,7 +331,7 @@ jobs:
 
       - name: Publish version manifest
         run: |
-          docker buildx imagetools create --tag "$IMAGE:$CREATED_TAG" \
+          docker buildx imagetools create --tag "$IMAGE:$CREATED_TAG" --tag "$IMAGE:sha-$GITHUB_SHA" \
             "$IMAGE:$BUILD_TAG-amd64" "$IMAGE:$BUILD_TAG-arm64"
 
       - name: Verify published platforms

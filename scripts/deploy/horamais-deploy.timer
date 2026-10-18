@@ -1,0 +1,11 @@
+[Unit]
+Description=Verificar atualizacoes do Hora Mais a cada cinco minutos
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=horamais-deploy.service
+
+[Install]
+WantedBy=timers.target
