@@ -1,0 +1,33 @@
+name: Production deployment
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/production-deploy.yml"
+      - "scripts/deploy/**"
+      - "docker-compose.yml"
+      - "garage.toml"
+      - "back/Back.API/Program.cs"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate deploy contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check scripts and rollback behavior
+        run: |
+          bash -n scripts/deploy/*.sh
+          bash scripts/deploy/test-deploy.sh
+      - name: Check Compose image overrides
+        env:
+          GARAGE_RPC_SECRET: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          GARAGE_ACCESS_KEY: GKaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          GARAGE_SECRET_KEY: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+          BACKEND_IMAGE: ghcr.io/example/horas-discentes-backend@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          FRONTEND_IMAGE: ghcr.io/example/horas-discentes-frontend@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        run: docker compose -f docker-compose.yml config --quiet

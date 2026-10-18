@@ -1,4 +1,4 @@
-﻿## Ignore para projetos .NET
+## Ignore para projetos .NET
 ## Fonte: GitHub gitignore templates + ajustes comuns
 
 # Compilados do Visual Studio
@@ -72,4 +72,4 @@ appsettings.*.json
 # Docker
 **/docker-compose.override.yml
 
-.env
+.env.deploy/
