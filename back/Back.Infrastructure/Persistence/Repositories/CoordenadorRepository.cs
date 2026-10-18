@@ -1,6 +1,7 @@
 ﻿using Back.Application.Interfaces.Repositories;
 using Back.Domain.Entities.Coordenador;
 using Back.Infrastructure.Persistence.Context;
+using Back.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -56,6 +57,7 @@ public class CoordenadorRepository : ICoordenadorRepository
 
     public async Task DeleteComIdentityAsync(Guid id)
     {
+        await using var transaction = await AccountManagementLock.AcquireAsync(_context);
         var coordenador = await _context.Coordenadores.FirstOrDefaultAsync(a => a.Id == id);
 
         if (coordenador == null) return;
@@ -66,12 +68,15 @@ public class CoordenadorRepository : ICoordenadorRepository
             var identityUser = await _userManager.FindByIdAsync(coordenador.IdentityUserId);
             if (identityUser != null)
             {
-                await _userManager.DeleteAsync(identityUser);
+                if (await _userManager.IsInRoleAsync(identityUser, "ADMIN"))
+                    throw new InvalidOperationException("Rebaixe o administrador na tela de usuários antes de excluir sua conta.");
+                UserAdministrationService.EnsureSuccess(await _userManager.DeleteAsync(identityUser));
             }
         }
 
         // Remove o coordenador
         _context.Coordenadores.Remove(coordenador);
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
 }

@@ -23,15 +23,18 @@ public class AuthService : IAuthService
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IConfiguration _config;
     private readonly ApplicationDbContext _context;
+    private readonly UserAdministrationService _administration;
 
     public AuthService(
         UserManager<IdentityUser> userManager,
         IConfiguration config,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        UserAdministrationService administration)
     {
         _userManager = userManager;
         _config = config;
         _context = context;
+        _administration = administration;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto dto)
@@ -40,7 +43,8 @@ public class AuthService : IAuthService
         if (identityUser == null || await _userManager.IsLockedOutAsync(identityUser))
             throw new UnauthorizedAccessException("Email ou senha inválidos.");
 
-        if (await _userManager.IsInRoleAsync(identityUser, "ALUNO"))
+        if (await _userManager.IsInRoleAsync(identityUser, "ALUNO") &&
+            !await _userManager.IsInRoleAsync(identityUser, "ADMIN"))
             throw new UnauthorizedAccessException("Email ou senha inválidos.");
 
         if (!identityUser.LockoutEnabled)
@@ -85,6 +89,10 @@ public class AuthService : IAuthService
 
         if (!payload.EmailVerified)
             throw new UnauthorizedAccessException("E-mail do Google não verificado.");
+        if (!UserAdministrationService.IsInstitutional(payload.Email))
+            throw new UnauthorizedAccessException("Use um e-mail institucional do IFPE.");
+
+        await _administration.BootstrapVerifiedEmailAsync(payload.Email);
 
         var identityUser = await _userManager.FindByEmailAsync(payload.Email);
         if (identityUser == null)
@@ -92,22 +100,16 @@ public class AuthService : IAuthService
 
         if (!identityUser.EmailConfirmed)
         {
-            var roles = await _userManager.GetRolesAsync(identityUser);
-            if (roles.Contains("ALUNO") && await _context.Alunos.AnyAsync(a => a.IdentityUserId == identityUser.Id))
-            {
-                if (await _userManager.HasPasswordAsync(identityUser))
-                {
-                    var removePassword = await _userManager.RemovePasswordAsync(identityUser);
-                    if (!removePassword.Succeeded)
-                        throw new InvalidOperationException("Não foi possível concluir o cadastro com Google.");
-                }
-                identityUser.EmailConfirmed = true;
-                var update = await _userManager.UpdateAsync(identityUser);
-                if (!update.Succeeded)
-                    throw new InvalidOperationException("Não foi possível concluir o cadastro com Google.");
-            }
-            else
-                return GoogleLoginResponseDto.ForPendingVerification(payload.Name, payload.Email);
+            identityUser.EmailConfirmed = true;
+            var update = await _userManager.UpdateAsync(identityUser);
+            if (!update.Succeeded)
+                throw new InvalidOperationException("Não foi possível verificar a conta com Google.");
+        }
+        if (await _userManager.HasPasswordAsync(identityUser))
+        {
+            var removed = await _userManager.RemovePasswordAsync(identityUser);
+            if (!removed.Succeeded)
+                throw new InvalidOperationException("Não foi possível concluir o acesso com Google.");
         }
 
         var login = await BuildLoginResponseAsync(identityUser);
@@ -156,8 +158,11 @@ public class AuthService : IAuthService
 
     private async Task<LoginResponseDto> BuildLoginResponseAsync(IdentityUser identityUser)
     {
+        if (!await _administration.IsActiveAsync(identityUser.Id) || await _userManager.IsLockedOutAsync(identityUser))
+            throw new UnauthorizedAccessException("Conta inativa ou temporariamente bloqueada. Procure o administrador.");
         var roles = await _userManager.GetRolesAsync(identityUser);
-        var role = roles.FirstOrDefault() ?? throw new UnauthorizedAccessException("Usuário sem perfil.");
+        var role = new[] { "ADMIN", "COORDENADOR", "ALUNO", "USUARIO" }.FirstOrDefault(roles.Contains)
+            ?? throw new UnauthorizedAccessException("Usuário sem perfil.");
 
         string nome;
         Guid entidadeId;
@@ -202,6 +207,11 @@ public class AuthService : IAuthService
 
                 nome = admin.Email;
                 entidadeId = admin.Id;
+                break;
+
+            case "USUARIO":
+                nome = identityUser.Email!;
+                entidadeId = Guid.Empty;
                 break;
 
             default:

@@ -38,6 +38,7 @@ services:
       - JWT__Issuer=${JWT__Issuer}
       - JWT__Audience=${JWT__Audience}
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL:-}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - COORD_EMAIL=${COORD_EMAIL}

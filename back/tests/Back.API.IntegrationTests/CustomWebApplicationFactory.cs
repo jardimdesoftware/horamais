@@ -4,6 +4,8 @@ using System.Net.Http.Json;
 using Back.Application.DTOs.Auth;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 using Testcontainers.PostgreSql;
 
@@ -16,6 +18,11 @@ namespace Back.API.IntegrationTests;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
+            new Dictionary<string, string?> { ["INITIAL_ADMIN_EMAIL"] = "" }));
+    }
     public const string AdminEmail = "admin.teste@ifpe.edu.br";
     public const string AdminPassword = "Admin@1234";
     public const string CursoNome = "Engenharia de Software";
@@ -41,6 +48,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         Environment.SetEnvironmentVariable("Jwt__Audience", "HoraMaisUsuarios");
         Environment.SetEnvironmentVariable("CORS_ALLOWED_ORIGIN", "http://localhost:3000");
         Environment.SetEnvironmentVariable("Authentication__Google__ClientId", "teste-client-id.apps.googleusercontent.com");
+        Environment.SetEnvironmentVariable("Authentication__EnableLegacyPasswordFlows", "true");
+        Environment.SetEnvironmentVariable("Testing__Enabled", "true");
         Environment.SetEnvironmentVariable("FileStorage__Endpoint", "http://localhost:9000");
         Environment.SetEnvironmentVariable("FileStorage__AccessKey", "integration-test");
         Environment.SetEnvironmentVariable("FileStorage__SecretKey", "integration-test-secret");

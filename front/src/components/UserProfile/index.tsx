@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +12,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
-import { CircleUserRound, LogOut, ShieldCheck } from 'lucide-react';
+import { CircleUserRound, LogOut, ShieldCheck, Users } from 'lucide-react';
 
 interface UserProfileProps {
   user: {
@@ -23,7 +25,8 @@ interface UserProfileProps {
 const roleLabel: Record<string, string> = {
   ALUNO: 'Aluno(a)',
   COORDENADOR: 'Coordenador(a)',
-  ADMIN: 'Administrador(a)'
+  ADMIN: 'Administrador(a)',
+  USUARIO: 'Usuário'
 };
 
 export default function UserProfile({ user, onLogout }: UserProfileProps) {
@@ -62,6 +65,18 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
         </div>
 
         <DropdownMenuSeparator />
+
+        {user.role?.toUpperCase() === 'ADMIN' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/usuarios" className="cursor-pointer">
+                <Users className="mr-2 h-4 w-4" />
+                <span>Pessoas e acesso</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
 
         <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />

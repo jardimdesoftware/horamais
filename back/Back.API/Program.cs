@@ -18,7 +18,7 @@ using System.Threading.RateLimiting;
 
 var envPath = FindFileUpwards(Directory.GetCurrentDirectory(), ".env");
 if (envPath is not null)
-    DotNetEnv.Env.Load(envPath);
+    DotNetEnv.Env.NoClobber().Load(envPath);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -139,9 +139,10 @@ builder.Services.AddAuthentication(options =>
             var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
             var identity = await db.Users.AsNoTracking()
                 .Where(u => u.Id == userId)
-                .Select(u => new { u.SecurityStamp })
+                .Select(u => new { u.SecurityStamp, u.EmailConfirmed })
                 .SingleOrDefaultAsync();
-            if (identity is null || identity.SecurityStamp != stamp)
+            if (identity is null || identity.SecurityStamp != stamp || !identity.EmailConfirmed ||
+                await db.UserAccesses.AnyAsync(a => a.IdentityUserId == userId && !a.IsActive))
             {
                 context.Fail("Sessão revogada.");
                 return;
@@ -242,7 +243,7 @@ async Task SeedDatabaseAsync(WebApplication app, bool includeDevelopmentData)
         await context.Database.MigrateAsync();
     }
 
-    var roles = new[] { "ALUNO", "COORDENADOR", "ADMIN" };
+    var roles = new[] { "ALUNO", "COORDENADOR", "ADMIN", "USUARIO" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
@@ -252,7 +253,10 @@ async Task SeedDatabaseAsync(WebApplication app, bool includeDevelopmentData)
     await LegacySeedCredentialRemediator.RunAsync(userManager);
 
     Console.WriteLine(" Rodando seed de admin...");
-    await AdminSeeder.SeedAsync(context, userManager);
+    // Compatibility for existing deployments and test fixtures using legacy credentials.
+    if (string.IsNullOrWhiteSpace(app.Configuration["INITIAL_ADMIN_EMAIL"]) &&
+        !await context.AdminInitializations.AnyAsync())
+        await AdminSeeder.SeedAsync(context, userManager);
 
     Console.WriteLine(" Rodando seed de campi...");
     await CampusSeeder.SeedAsync(context);

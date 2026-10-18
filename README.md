@@ -76,21 +76,18 @@ da VM, o timer de atualização e o procedimento de rollback.
 
 ### Provisionamento e remediação de contas
 
-Defina `ADMIN_EMAIL` e uma `ADMIN_PASSWORD` única e forte antes do primeiro boot.
-O administrador usa o endpoint de convite para cadastrar coordenadores; o
-convite só vale para o e-mail destinatário, expira em duas horas e é consumido
-uma vez. Alunos entram com uma conta Google institucional e não precisam de
-senha local. O seed de desenvolvimento cria curso e turmas, mas não cria mais
-usuários com senha pública.
+Defina `INITIAL_ADMIN_EMAIL` com o e-mail institucional do administrador
+inicial. O acesso ao sistema é feito somente pela conta Google institucional.
+O administrador atribui coordenadores diretamente em **Pessoas e acesso**,
+inclusive criando uma conta sem senha para quem ainda não entrou. Alunos fazem
+o primeiro acesso com Google e completam o cadastro da turma e matrícula.
 
 Ao atualizar uma instalação antiga, o boot remove automaticamente a senha
 conhecida das seis contas de demonstração que ainda a utilizem. Os dados
-dessas contas permanecem; cadastre coordenadores reais por convite e remova
-os usuários de demonstração que não forem necessários. Revise também as
-credenciais do administrador e de qualquer coordenador provisionado por
-variáveis de ambiente: mudar a variável após o primeiro boot não altera a
-senha já gravada no Identity. Faça a troca pelo fluxo de recuperação ou por
-um procedimento administrativo controlado. A atualização invalida JWTs
+dessas contas permanecem; atribua coordenadores reais em **Pessoas e acesso**
+e remova os usuários de demonstração que não forem necessários. Os endpoints
+de senha e convite antigos ficam desativados fora dos testes. Ao entrar com
+Google, uma conta antiga perde a senha local. A atualização invalida JWTs
 anteriores, exigindo novo login.
 
 Em produção, o Compose publica apenas o frontend. Backend, PostgreSQL e

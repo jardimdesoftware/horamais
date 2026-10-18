@@ -25,6 +25,9 @@ export const useRedirectIfAuthenticated = () => {
         case 'coordenador':
           router.replace('/coordenacao');
           break;
+        case 'usuario':
+          router.replace('/conta');
+          break;
         default:
           router.replace('/');
       }

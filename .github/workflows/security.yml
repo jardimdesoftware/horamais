@@ -26,6 +26,14 @@ jobs:
             semgrep scan --config p/default --strict --disable-nosem --metrics off \
             --exclude '**/node_modules/**' --exclude '**/bin/**' --exclude '**/obj/**' \
             --json-output artifacts/security/semgrep.json back front > artifacts/security/semgrep.log 2>&1
+      - name: Diagnose scanner failure
+        if: failure()
+        run: |
+          if test -s artifacts/security/semgrep.json; then
+            jq -c '.errors[]? | {type, level, paths: [.spans[]?.path]}' artifacts/security/semgrep.json
+          else
+            tail -n 30 artifacts/security/semgrep.log
+          fi
       - name: Enforce SAST policy and sanitize report
         if: always()
         run: node scripts/security/gate.mjs semgrep artifacts/security/semgrep.json artifacts/security/sast-summary.json

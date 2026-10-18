@@ -1,5 +1,6 @@
 ﻿using Back.Application.Interfaces.Identity;
 using Microsoft.AspNetCore.Identity;
+using Back.Infrastructure.Persistence.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,13 @@ public class IdentityService : IIdentityService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly ApplicationDbContext _context;
 
-    public IdentityService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+    public IdentityService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _context = context;
     }
 
     public async Task<(bool Success, string UserId, string[] Errors)> CreateUserAsync(string email, string password, string role, bool emailConfirmed = true)
@@ -54,6 +57,7 @@ public class IdentityService : IIdentityService
 
     public async Task<(bool Success, string[] Errors)> UpdateUserAsync(string userId, string newEmail, string? newPassword)
     {
+        await using var transaction = await AccountManagementLock.AcquireAsync(_context);
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
@@ -61,6 +65,8 @@ public class IdentityService : IIdentityService
         }
 
         var errors = new List<string>();
+        if (await _userManager.IsInRoleAsync(user, "ADMIN"))
+            throw new InvalidOperationException("Credenciais de administradores não podem ser alteradas pelo cadastro acadêmico.");
 
         // 1. Atualizar Email e UserName (se mudou)
         if (!string.Equals(user.Email, newEmail, StringComparison.OrdinalIgnoreCase))
@@ -98,6 +104,7 @@ public class IdentityService : IIdentityService
             return (false, errors.ToArray());
         }
 
+        await transaction.CommitAsync();
         return (true, Array.Empty<string>());
     }
 }

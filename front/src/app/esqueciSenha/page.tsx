@@ -1,8 +1,5 @@
-import { ResetPassword } from '@/components/ResetPassword';
+import { redirect } from 'next/navigation';
+
 export default function EsqueciSenha() {
-  return (
-    <div className="min-h-screen flex w-full">
-      <ResetPassword />
-    </div>
-  );
+  redirect('/');
 }

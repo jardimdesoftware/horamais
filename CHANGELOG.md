@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
+  corrigindo os achados altos do Trivy durante a validação da administração
+  de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 - **CI/CD:** gates de SAST e DAST antes da publicação e bloqueio de
   vulnerabilidades HIGH/CRITICAL pelo Trivy em AMD64 e ARM64, incluindo achados
   sem correção disponível ([#481](https://github.com/jardimdesoftware/horamais/issues/481)).
@@ -32,6 +35,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Adições
 
+- **Backend e frontend:** administração de contas e atribuição direta de
+  coordenadores, inclusive antes do primeiro acesso com Google
+  ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 - **Deploy:** orquestração automática da stack na VM após aprovação de ambos
   os workflows de produção, com imagens fixadas por digest, verificação de
   saúde e rollback em falha; a VM consulta a `main` por um timer
@@ -43,6 +49,12 @@ para o histórico completo. O procedimento de atualização está em
 
 - **Documentação:** histórico de mudanças e orientações para atualizá-lo a cada
   contribuição e release ([#482](https://github.com/jardimdesoftware/horamais/issues/482)).
+
+### Alterações
+
+- **Backend e frontend:** entrada somente com Google institucional; formulários
+  e endpoints legados de senha e convite deixam de atender no ambiente normal
+  ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
 

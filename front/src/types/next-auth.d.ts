@@ -6,7 +6,7 @@ declare module 'next-auth' {
     user: {
       name: string;
       email: string;
-      role: 'admin' | 'coordenador' | 'aluno';
+      role: 'admin' | 'coordenador' | 'aluno' | 'usuario';
       sub: string;
       isNewPpc?: boolean;
       entidadeId?: string; // opcional
@@ -18,7 +18,7 @@ declare module 'next-auth' {
   interface User {
     name: string;
     email: string;
-    role: 'admin' | 'coordenador' | 'aluno';
+    role: 'admin' | 'coordenador' | 'aluno' | 'usuario';
     sub: string;
     isNewPpc?: boolean; // opcional
   }

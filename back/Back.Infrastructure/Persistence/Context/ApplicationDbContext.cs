@@ -38,10 +38,16 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<ResetPasswordCode> ResetPasswordCodes { get; set; }
     public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
     public DbSet<LembreteEmail> LembretesEmail { get; set; }
+    public DbSet<UserAccess> UserAccesses { get; set; }
+    public DbSet<AdminInitialization> AdminInitializations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<UserAccess>().HasKey(x => x.IdentityUserId);
+        modelBuilder.Entity<UserAccess>().HasOne<IdentityUser>().WithOne()
+            .HasForeignKey<UserAccess>(x => x.IdentityUserId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<AdminInitialization>().Property(x => x.Id).ValueGeneratedNever();
 
         modelBuilder.Entity<Aluno>()
         .HasOne(a => a.Turma)

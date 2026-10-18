@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.Extensions.Configuration;
 
 namespace Back.API.Controllers;
 
@@ -18,6 +19,7 @@ public class CoordenadorController : ControllerBase
     private readonly UpdateCoordenadorSelfUseCase _updateSelf;
     private readonly UpdateCoordenadorAdminUseCase _updateAdmin;
     private readonly DeleteCoordenadorUseCase _delete;
+    private readonly IConfiguration _configuration;
 
     public CoordenadorController(
         EnviarConviteUseCase enviarConvite,
@@ -26,7 +28,8 @@ public class CoordenadorController : ControllerBase
         GetCoordenadorByCursoIdUseCase getByCursoId,
         UpdateCoordenadorSelfUseCase updateSelf,    
         UpdateCoordenadorAdminUseCase updateAdmin, 
-        DeleteCoordenadorUseCase delete)           
+        DeleteCoordenadorUseCase delete,
+        IConfiguration configuration)
     {
         _enviarConvite = enviarConvite;
         _criarCoordenador = criarCoordenador;
@@ -35,6 +38,7 @@ public class CoordenadorController : ControllerBase
         _updateSelf = updateSelf;     
         _updateAdmin = updateAdmin;  
         _delete = delete;    
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -54,6 +58,8 @@ public class CoordenadorController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> EnviarConvite([FromBody] ConviteCoordenadorRequest request)
     {
+        if (!_configuration.GetValue<bool>("Authentication:EnableLegacyPasswordFlows") ||
+            !_configuration.GetValue<bool>("Testing:Enabled")) return NotFound();
         await _enviarConvite.ExecuteAsync(request);
         return Ok(new { mensagem = "Convite enviado com sucesso." });
     }
@@ -77,6 +83,8 @@ public class CoordenadorController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Cadastrar([FromBody] CadastroCoordenadorRequest request)
     {
+        if (!_configuration.GetValue<bool>("Authentication:EnableLegacyPasswordFlows") ||
+            !_configuration.GetValue<bool>("Testing:Enabled")) return NotFound();
         var result = await _criarCoordenador.ExecuteAsync(request);
         return Ok(result);
     }
