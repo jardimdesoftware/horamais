@@ -28,7 +28,12 @@ jobs:
             --json-output artifacts/security/semgrep.json back front > artifacts/security/semgrep.log 2>&1
       - name: Diagnose scanner failure
         if: failure()
-        run: tail -n 80 artifacts/security/semgrep.log
+        run: |
+          if test -s artifacts/security/semgrep.json; then
+            jq -r '.errors[]? | [.type, .level, .path, .rule_id] | @tsv' artifacts/security/semgrep.json
+          else
+            tail -n 30 artifacts/security/semgrep.log
+          fi
       - name: Enforce SAST policy and sanitize report
         if: always()
         run: node scripts/security/gate.mjs semgrep artifacts/security/semgrep.json artifacts/security/sast-summary.json
