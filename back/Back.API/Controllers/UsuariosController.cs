@@ -8,8 +8,15 @@ namespace Back.API.Controllers;
 [ApiController]
 [Route("api/usuarios")]
 [Authorize(Roles = "ADMIN")]
-public class UsuariosController(UserAdministrationService administration) : ControllerBase
+public class UsuariosController : ControllerBase
 {
+    private readonly UserAdministrationService administration;
+
+    public UsuariosController(UserAdministrationService administration)
+    {
+        this.administration = administration;
+    }
+
     public record UpdateUserRequest(bool? Ativo, bool? Administrador);
     public record AssignCoordinatorRequest(Guid CursoId, string Nome, string NumeroPortaria, string Dou);
     public record CreateCoordinatorRequest(string Email, Guid CursoId, string Nome, string NumeroPortaria, string Dou);
