@@ -30,7 +30,7 @@ jobs:
         if: failure()
         run: |
           if test -s artifacts/security/semgrep.json; then
-            jq -r '.errors[]? | [.type, .level, .path, .rule_id] | @tsv' artifacts/security/semgrep.json
+            jq -r '.errors[]? | [(.type | if type == "array" then join(",") else tostring end), (.level // ""), (.path // ""), (.rule_id // "")] | @tsv' artifacts/security/semgrep.json
           else
             tail -n 30 artifacts/security/semgrep.log
           fi
