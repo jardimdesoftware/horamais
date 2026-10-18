@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
+  corrigindo os achados altos do Trivy durante a validação da administração
+  de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 - **CI/CD:** gates de SAST e DAST antes da publicação e bloqueio de
   vulnerabilidades HIGH/CRITICAL pelo Trivy em AMD64 e ARM64, incluindo achados
   sem correção disponível ([#481](https://github.com/jardimdesoftware/horamais/issues/481)).
