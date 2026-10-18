@@ -1,78 +1,62 @@
-# Deploy automático na VM
+# Deploy automático na VM Oracle
 
-O workflow `Production deployment` é disparado quando terminam os workflows
-`Backend CI/CD Workflow` ou `Frontend CI/CD Workflow`. Ele só prossegue quando
-**ambos os runs de `push` do mesmo commit da `main`** terminaram com sucesso.
-Esses runs já incluem SAST, DAST, Trivy e publicação das imagens AMD64/ARM64.
-Cada publicação gera uma tag `sha-<commit>`; o deploy resolve os digests dessas
-tags e grava as referências imutáveis das duas imagens em `.deploy/current.env`
-na VM. Uma revisão antiga é ignorada quando a `main` avança.
+A VM verifica a `main` a cada cinco minutos por um timer do systemd. Os workflows
+`Backend CI/CD Workflow` e `Frontend CI/CD Workflow` executam em todo push da
+`main` e publicam as duas imagens multiarch com a tag `sha-<commit>` somente
+após os gates de segurança. O timer espera as duas tags do mesmo commit,
+resolve os digests imutáveis e atualiza a stack. Assim, a VM não recebe uma
+conexão do GitHub Actions e nenhuma chave SSH é armazenada no GitHub.
 
-## Pré-requisitos na VM
+## Instalação inicial
 
-1. Instalar Docker com o plugin Compose v2 e disponibilizar `bash`, `ssh` e
-   `scp`. O usuário SSH precisa acessar o daemon Docker e escrever no diretório
-   da stack. Use uma conta dedicada com acesso restrito à VM; acesso ao daemon
-   Docker equivale, na prática, a privilégios elevados no host.
-2. Criar um diretório absoluto da stack, acessível ao usuário SSH, com `.env`
-   de produção preenchido conforme [`.env.example`](../.env.example). Manter
-   `.env`, volumes do Postgres e do Garage na VM; o workflow não transfere
-   segredos da aplicação nem dados persistidos. Planejar backup desses volumes
-   antes de ativar o deploy. Configurar o Garage antes do primeiro corte.
-3. Garantir saída da VM para `ghcr.io` e acesso da VM ao GitHub Actions por SSH.
-   Se os pacotes GHCR forem privados, permitir que o `GITHUB_TOKEN` deste
-   repositório os leia. O token é usado via stdin e o login Docker é criado em
-   um diretório temporário removido após cada execução.
-4. Instalar a chave pública SSH de deploy em `authorized_keys` da conta da VM.
-   Conferir a chave pública do host por canal confiável antes de adicioná-la
-   ao secret `DEPLOY_KNOWN_HOSTS`; não usar `ssh-keyscan` sem validação.
+A VM deve ter Docker, Buildx, Compose v2, Git, Bash e `flock`. O usuário `ubuntu`
+precisa pertencer ao grupo `docker`, que equivale a acesso privilegiado ao host.
+O checkout fica em `/home/ubuntu/horamais` e o `.env` local permanece fora do
+Git. Preencha `GARAGE_RPC_SECRET`, `GARAGE_ACCESS_KEY` e `GARAGE_SECRET_KEY`
+conforme [Garage](garage.md). Faça backup do banco antes da primeira migração;
+os objetos antigos do MinIO não são copiados automaticamente.
 
-## Configuração no GitHub
+Copie os arquivos `poll-vm.sh`, `horamais-deploy.service` e
+`horamais-deploy.timer` da revisão aprovada para a VM. O script fica em
+`/home/ubuntu/horamais/scripts/deploy/poll-vm.sh` e as unidades em
+`/etc/systemd/system/`. Depois:
 
-Criar o environment `production`. Nele, definir estas *variables*:
-
-| Variable | Valor |
-| --- | --- |
-| `DEPLOY_HOST` | Host DNS ou IPv4 da VM, sem esquema ou porta |
-| `DEPLOY_USER` | Usuário SSH dedicado |
-| `DEPLOY_PORT` | Porta SSH numérica |
-| `DEPLOY_PATH` | Caminho absoluto do diretório da stack, sem espaços |
-
-Definir os *secrets* `DEPLOY_SSH_KEY` (chave privada SSH) e
-`DEPLOY_KNOWN_HOSTS` (linha validada de `known_hosts`, incluindo porta no
-formato `[host]:porta` quando não for 22). No nível do **repositório**, definir
-`DEPLOY_ENABLED=true` apenas após o provisionamento e uma validação manual
-inicial. Antes disso, o job de deploy fica desabilitado. O environment pode
-exigir aprovação de um responsável conforme a política da equipe.
-
-O workflow faz o upload apenas do `docker-compose.yml`, `garage.toml` e do
-script de deploy para `.incoming-<run-id>`. A VM lê seu `.env` local. O script
-salva o Compose, a configuração do Garage e `.deploy/current.env` anteriores
-em `.deploy/rollback-<run-id>`, sobe os digests aprovados e espera a saúde de
-todos os serviços. Depois verifica o endpoint `/health` do backend, a resposta
-HTTP do frontend, o status do Garage e as imagens efetivas dos containers. Se
-qualquer etapa falhar, restaura a configuração e as imagens anteriores e tenta
-subi-las. O run fica vermelho mesmo quando o rollback funciona.
-
-## Operação e limites
-
-Use sempre **os dois arquivos de ambiente** ao operar a stack manualmente:
-
-```bash
-cd /caminho/da/stack
-docker compose --env-file .env --env-file .deploy/current.env -f docker-compose.yml ps
-docker compose --env-file .env --env-file .deploy/current.env -f docker-compose.yml logs --tail=100 backend frontend
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now horamais-deploy.timer
+sudo systemctl start horamais-deploy.service
+sudo systemctl status horamais-deploy.service
 ```
 
-O rollback automático restaura Compose e imagens, mas **não desfaz migrações
-do banco nem mudanças em volumes**. Antes de uma migração incompatível, preparar
-backup e plano de reversão específicos. No primeiro deploy não existe versão
-anterior para restaurar; uma falha exige intervenção manual. Confira os logs do
-run e o estado da VM antes de repetir. Cada push na `main` executa os dois
-workflows de produção, inclusive quando apenas um componente mudou, para
-garantir que as duas imagens pertençam ao mesmo commit.
+A regra Oracle de SSH `22/TCP` pode ser independente do Tailscale, mas o timer
+não precisa de SSH público para funcionar. Mantenha somente `80/TCP`, `443/TCP`
+e `22/TCP` expostos; Postgres, backend e Garage ficam na rede interna do Compose.
 
-O teste `scripts/deploy/test-deploy.sh` exercita sucesso, idempotência e
-rollback com um Docker simulado. A validação real de conectividade SSH, acesso
-ao GHCR, saúde da aplicação e restauração na VM depende da task de
-provisionamento da VM. Mantenha `DEPLOY_ENABLED` desabilitado até essa etapa.
+## Fluxo e rollback
+
+`poll-vm.sh` usa um lock para impedir duas execuções simultâneas. Se houver
+alterações rastreadas no checkout, ele suspende o deploy. Ele busca a `main`,
+aguarda as duas tags e prepara o Compose e a configuração do Garage da mesma
+revisão. `deploy-vm.sh` salva os arquivos anteriores em `.deploy/rollback-*`,
+substitui o antigo override local, sobe os serviços e verifica a saúde do
+backend, frontend e Garage. Se qualquer etapa falhar, restaura os arquivos e
+as imagens anteriores. Após sucesso, o checkout é atualizado para a revisão
+implantada e o MinIO órfão é removido; o volume antigo fica preservado.
+
+O rollback não desfaz migrações do banco nem alterações em volumes. Para mudanças
+incompatíveis, prepare backup e plano de restauração antes do merge. O primeiro
+corte preserva o Compose antigo, seu override e as imagens locais para que uma
+falha de inicialização possa restaurar a stack anterior.
+
+```sh
+systemctl list-timers horamais-deploy.timer
+journalctl -u horamais-deploy.service -n 100 --no-pager
+cd /home/ubuntu/horamais
+cat .deploy/current.env
+sudo docker compose --env-file .env --env-file .deploy/current.env -f docker-compose.yml ps
+```
+
+As referências das imagens e a revisão ficam em `.deploy/current.env`; esse
+arquivo não contém credenciais. O `.env` e o backup do banco continuam privados
+na VM. O teste `scripts/deploy/test-deploy.sh` exercita o primeiro corte e o
+rollback de uma atualização com um Docker simulado.
