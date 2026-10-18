@@ -194,7 +194,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_API_URL: /api
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
@@ -217,7 +217,7 @@ jobs:
           push: false
           tags: ${{ steps.image.outputs.ref }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_API_URL=/api
             VERSION=${{ env.CREATED_TAG }}
             REVISION=${{ github.sha }}
             BUILDTIME=${{ steps.image.outputs.built_at }}
