@@ -128,7 +128,20 @@ try {
     console.log(`DAST: active scan of ${url}`);
     const scan = await zap('ascan', 'action', 'scan', { url, recurse: 'true', inScopeOnly: 'true', contextId });
     if (!/^\d+$/.test(scan.scan)) throw new Error('Missing active scan ID');
-    await poll(async () => (await zap('ascan', 'view', 'status', { scanId: scan.scan })).status === '100', 900_000, 'active scan');
+    const progress = { target: url, percent: 0, completed: false };
+    (summary.activeScans ??= []).push(progress);
+    let lastReport = 0;
+    await poll(async () => {
+      const percent = Number((await zap('ascan', 'view', 'status', { scanId: scan.scan })).status);
+      if (!Number.isInteger(percent) || percent < 0 || percent > 100) throw new Error('Invalid active scan progress');
+      progress.percent = percent;
+      if (percent === 100 || Date.now() - lastReport >= 30_000) {
+        console.log(`DAST: active scan of ${url}: ${percent}%`);
+        lastReport = Date.now();
+      }
+      return percent === 100;
+    }, 900_000, `active scan of ${url}`);
+    progress.completed = true;
   }
   await poll(async () => (await zap('pscan', 'view', 'recordsToScan')).recordsToScan === '0', 180_000, 'passive scan');
   await authenticatedProbe();

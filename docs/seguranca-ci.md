@@ -49,6 +49,11 @@ rotas que o spider de páginas não descobriria. Cada scan deve terminar em 100%
 timeout não é considerado aprovação. Containers e volumes são removidos ao final,
 com uma etapa adicional de limpeza no workflow.
 
+Cada scan ativo tem até 15 minutos, dentro do limite de 45 minutos do workflow.
+O progresso é registrado a cada 30 segundos e incluído no resumo sanitizado,
+inclusive em falhas. A aprovação exige 100% em ambos os scans e nenhum achado
+bloqueante. Atualizações de manutenção preservam esses limites e critérios.
+
 Limites da cobertura: frontend público e API autenticada como ADMIN. As rotas
 de autenticação são excluídas do scan ativo para não revogar a sessão nem seguir
 OAuth externo. Não há cobertura de navegação autenticada NextAuth, Google real,

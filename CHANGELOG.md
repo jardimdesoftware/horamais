@@ -14,6 +14,13 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Backend:** dependências atualizadas em conjunto, com Entity Framework e
+  Identity alinhados em 8.0.33 e Swagger atualizado na linha compatível 9.0
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
+- **Frontend:** dependências atualizadas, incluindo Next.js 16.4.3, Zod 4.6.7
+  e `follow-redirects` 1.16.1, para corrigir achados altos e críticos,
+  preservando a compatibilidade entre TypeScript, ESLint e seus plugins
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
   de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
@@ -52,9 +59,18 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Alterações
 
+- **CI/CD:** Dependabot coordena as versões NuGet em uma única configuração,
+  agrupa correções de segurança e separa atualizações major para revisão
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
+- **CI/CD:** DAST registra o progresso da varredura, mantendo os prazos,
+  a exigência de cobertura completa e os bloqueios de segurança
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Backend e frontend:** entrada somente com Google institucional; formulários
   e endpoints legados de senha e convite deixam de atender no ambiente normal
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
+- **CI/CD:** build do frontend usa valores descartáveis de autenticação para
+  validar PRs do Dependabot sem depender de secrets de produção
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
 

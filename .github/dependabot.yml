@@ -1,8 +1,15 @@
 version: 2
 updates:
-  # Back.API
+  # One NuGet update job keeps shared versions aligned across the solution.
   - package-ecosystem: "nuget"
-    directory: "/back/Back.API"
+    directories:
+      - "/back/Back.API"
+      - "/back/Back.Application"
+      - "/back/Back.Domain"
+      - "/back/Back.Infrastructure"
+      - "/back/tests/Back.API.IntegrationTests"
+      - "/back/tests/Back.Application.UnitTests"
+      - "/back/tests/Back.Domain.UnitTests"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -12,42 +19,28 @@ updates:
       prefix: "chore"
     labels:
       - "type: chore"
+    # Runtime/ORM/OpenAPI major upgrades need a coordinated .NET migration.
+    # Continue receiving maintenance and security fixes on the supported lines.
+    ignore:
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Extensions.Identity.Stores"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Npgsql.EntityFrameworkCore.PostgreSQL"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Serilog.AspNetCore"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Swashbuckle.AspNetCore*"
+        update-types: ["version-update:semver-major"]
     groups:
-      dependencias-back-api:
+      dependencias-back:
         patterns:
           - "*"
-
-  # Back.Application
-  - package-ecosystem: "nuget"
-    directory: "/back/Back.Application"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    allow:
-      - dependency-type: "all"
-    commit-message:
-      prefix: "chore"
-    labels:
-      - "type: chore"
-    groups:
-      dependencias-back-application:
-        patterns:
-          - "*"
-
-  # Back.Domain
-  - package-ecosystem: "nuget"
-    directory: "/back/Back.Domain"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    allow:
-      - dependency-type: "all"
-    commit-message:
-      prefix: "chore"
-    labels:
-      - "type: chore"
-    groups:
-      dependencias-back-domain:
+        update-types: ["minor", "patch"]
+      seguranca-back:
+        applies-to: security-updates
         patterns:
           - "*"
 
@@ -67,3 +60,15 @@ updates:
       dependencias-front:
         patterns:
           - "*"
+        update-types: ["minor", "patch"]
+      seguranca-front:
+        applies-to: security-updates
+        patterns: ["*"]
+    # Revisit when typescript-eslint and React plugins support these versions.
+    ignore:
+      - dependency-name: "typescript"
+        versions: [">=6.1.0"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/js"
+        update-types: ["version-update:semver-major"]

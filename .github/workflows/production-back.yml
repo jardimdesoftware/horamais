@@ -207,6 +207,9 @@ jobs:
           cd back/Back.API
           dotnet build Back.sln --no-restore
 
+      - name: Run unit and PostgreSQL integration tests
+        run: dotnet test back/Back.API/Back.sln --no-build --no-restore --logger "console;verbosity=minimal"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
