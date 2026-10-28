@@ -49,6 +49,14 @@ rotas que o spider de páginas não descobriria. Cada scan deve terminar em 100%
 timeout não é considerado aprovação. Containers e volumes são removidos ao final,
 com uma etapa adicional de limpeza no workflow.
 
+Cada scan ativo tem até 25 minutos para concluir a cobertura do OpenAPI e das
+páginas. O workflow reserva até 75 minutos para os dois alvos, construção,
+inicialização e análise passiva. O progresso é registrado a cada 30 segundos e
+incluído no resumo sanitizado, inclusive em falhas. O prazo anterior de 15
+minutos foi insuficiente para a API após a atualização das dependências do
+backend; a aprovação continua exigindo 100% em ambos os scans e nenhum achado
+bloqueante.
+
 Limites da cobertura: frontend público e API autenticada como ADMIN. As rotas
 de autenticação são excluídas do scan ativo para não revogar a sessão nem seguir
 OAuth externo. Não há cobertura de navegação autenticada NextAuth, Google real,

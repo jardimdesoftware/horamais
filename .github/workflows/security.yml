@@ -48,7 +48,8 @@ jobs:
   dast:
     name: DAST
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # Two active scans can each take up to 25 minutes, plus builds and startup.
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
