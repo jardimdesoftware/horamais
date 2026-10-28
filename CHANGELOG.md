@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Backend:** dependências atualizadas em conjunto, com versões compatíveis do
+  Entity Framework e configuração JWT do Swagger adaptada ao OpenAPI atualizado
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
   de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
@@ -52,6 +55,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Alterações
 
+- **CI/CD:** Dependabot coordena as versões NuGet em uma única configuração,
+  agrupa correções de segurança e separa atualizações major para revisão
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Backend e frontend:** entrada somente com Google institucional; formulários
   e endpoints legados de senha e convite deixam de atender no ambiente normal
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).

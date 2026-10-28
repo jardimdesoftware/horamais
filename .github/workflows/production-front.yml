@@ -191,12 +191,17 @@ jobs:
       - name: Run Lint
         run: npm run lint
 
+      - name: Run tests
+        run: npm test -- --runInBand
+
       - name: Build
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: /api
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          # Dependabot PRs do not receive Actions secrets. Build with disposable
+          # values; deployment supplies the real authentication settings.
+          NEXTAUTH_SECRET: frontend-build-only-secret
+          NEXTAUTH_URL: http://localhost:3000
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

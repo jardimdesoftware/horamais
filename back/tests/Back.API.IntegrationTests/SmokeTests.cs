@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 
 using FluentAssertions;
 
@@ -21,5 +22,11 @@ public class SmokeTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Horas Discentes API");
+        using var document = JsonDocument.Parse(content);
+        var root = document.RootElement;
+        var bearer = root.GetProperty("components").GetProperty("securitySchemes").GetProperty("Bearer");
+        bearer.GetProperty("type").GetString().Should().Be("http");
+        bearer.GetProperty("scheme").GetString().Should().Be("bearer");
+        root.GetProperty("security")[0].GetProperty("Bearer").GetArrayLength().Should().Be(0);
     }
 }
