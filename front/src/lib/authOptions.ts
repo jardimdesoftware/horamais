@@ -177,10 +177,7 @@ export const authOptions: AuthOptions = {
       session.user.name = token.name as string;
       session.user.email = token.email as string;
       session.user.role = token.role as
-        | 'admin'
-        | 'coordenador'
-        | 'aluno'
-        | 'usuario';
+        'admin' | 'coordenador' | 'aluno' | 'usuario';
 
       (session.user as any).entidadeId = token.entidadeId;
       (session.user as any).isNewPpc = token.isNewPpc;
