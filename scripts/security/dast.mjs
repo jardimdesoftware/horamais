@@ -140,7 +140,7 @@ try {
         lastReport = Date.now();
       }
       return percent === 100;
-    }, 1_500_000, `active scan of ${url}`);
+    }, 900_000, `active scan of ${url}`);
     progress.completed = true;
   }
   await poll(async () => (await zap('pscan', 'view', 'recordsToScan')).recordsToScan === '0', 180_000, 'passive scan');

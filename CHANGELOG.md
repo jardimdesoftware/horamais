@@ -14,8 +14,8 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
-- **Backend:** dependências atualizadas em conjunto, com versões compatíveis do
-  Entity Framework e configuração JWT do Swagger adaptada ao OpenAPI atualizado
+- **Backend:** dependências atualizadas em conjunto, com Entity Framework e
+  Identity alinhados em 8.0.33 e Swagger atualizado na linha compatível 9.0
   ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Frontend:** `follow-redirects` atualizado para 1.16.1 para corrigir os alertas
   altos também na validação cruzada do PR do backend
@@ -61,9 +61,8 @@ para o histórico completo. O procedimento de atualização está em
 - **CI/CD:** Dependabot coordena as versões NuGet em uma única configuração,
   agrupa correções de segurança e separa atualizações major para revisão
   ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
-- **CI/CD:** DAST registra o progresso e concede até 25 minutos por alvo para
-  completar a varredura após as atualizações do backend, mantendo a exigência
-  de cobertura completa e os bloqueios de segurança
+- **CI/CD:** DAST registra o progresso da varredura, mantendo os prazos,
+  a exigência de cobertura completa e os bloqueios de segurança
   ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Backend e frontend:** entrada somente com Google institucional; formulários
   e endpoints legados de senha e convite deixam de atender no ambiente normal

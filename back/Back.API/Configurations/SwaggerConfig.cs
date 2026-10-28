@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 
 namespace Back.API.Configurations;
 
@@ -24,14 +24,24 @@ public static class SwaggerConfig
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
                 Scheme = "bearer",
-                BearerFormat = "JWT"
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+
+            var securityRequirement = new OpenApiSecurityRequirement
+            {
+                {
+                    securityScheme,
+                    Array.Empty<string>()
+                }
             };
 
             c.AddSecurityDefinition("Bearer", securityScheme);
-            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-            });
+            c.AddSecurityRequirement(securityRequirement);
 
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Join(AppContext.BaseDirectory, xmlFile);

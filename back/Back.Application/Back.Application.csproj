@@ -6,8 +6,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.22" />
-		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.14" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.33" />
+		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.33" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.23.0" />
 		<PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.14" />
 		<ProjectReference Include="..\Back.Domain\Back.Domain.csproj" />

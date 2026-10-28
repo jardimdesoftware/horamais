@@ -19,6 +19,21 @@ updates:
       prefix: "chore"
     labels:
       - "type: chore"
+    # Runtime/ORM/OpenAPI major upgrades need a coordinated .NET migration.
+    # Continue receiving maintenance and security fixes on the supported lines.
+    ignore:
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Extensions.Identity.Stores"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Npgsql.EntityFrameworkCore.PostgreSQL"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Serilog.AspNetCore"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Swashbuckle.AspNetCore*"
+        update-types: ["version-update:semver-major"]
     groups:
       dependencias-back:
         patterns:
