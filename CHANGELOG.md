@@ -17,8 +17,9 @@ para o histórico completo. O procedimento de atualização está em
 - **Backend:** dependências atualizadas em conjunto, com Entity Framework e
   Identity alinhados em 8.0.33 e Swagger atualizado na linha compatível 9.0
   ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
-- **Frontend:** `follow-redirects` atualizado para 1.16.1 para corrigir os alertas
-  altos também na validação cruzada do PR do backend
+- **Frontend:** dependências atualizadas, incluindo Next.js 16.4.3, Zod 4.6.7
+  e `follow-redirects` 1.16.1, para corrigir achados altos e críticos,
+  preservando a compatibilidade entre TypeScript, ESLint e seus plugins
   ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
@@ -32,9 +33,6 @@ para o histórico completo. O procedimento de atualização está em
 - **Frontend:** dependências `sharp` e `source-map-js` atualizadas e npm removido
   da imagem de produção para tratar os seis achados altos do Trivy
   ([#490](https://github.com/jardimdesoftware/horamais/issues/490)).
-- **Frontend:** dependências atualizadas, incluindo `follow-redirects` 1.16.1,
-  preservando a compatibilidade entre TypeScript, ESLint e seus plugins
-  ([#516](https://github.com/jardimdesoftware/horamais/pull/516)).
 - **Backend:** runtime migrado da imagem Debian para a variante oficial Alpine
   com ICU e dados de fuso horário para eliminar os achados altos/críticos da
   imagem-base ([#489](https://github.com/jardimdesoftware/horamais/issues/489)).
@@ -72,7 +70,7 @@ para o histórico completo. O procedimento de atualização está em
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 - **CI/CD:** build do frontend usa valores descartáveis de autenticação para
   validar PRs do Dependabot sem depender de secrets de produção
-  ([#516](https://github.com/jardimdesoftware/horamais/pull/516)).
+  ([#514](https://github.com/jardimdesoftware/horamais/pull/514)).
 
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
 
