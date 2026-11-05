@@ -45,8 +45,11 @@ public class UserAdministrationTests(CustomWebApplicationFactory factory)
         return (await users.FindByEmailAsync(CustomWebApplicationFactory.AdminEmail))!.Id;
     }
 
-    [Fact]
-    public async Task Admin_CriaCoordenadorSemSenha_ParaPrimeiroLoginGoogle()
+    [Theory]
+    [InlineData("ifpe.edu.br")]
+    [InlineData("docente.ifpe.edu.br")]
+    [InlineData("belojardim.ifpe.edu.br")]
+    public async Task Admin_CriaCoordenadorSemSenha_ParaPrimeiroLoginGoogle(string dominio)
     {
         Guid courseId;
         using (var scope = factory.Services.CreateScope())
@@ -54,7 +57,7 @@ public class UserAdministrationTests(CustomWebApplicationFactory factory)
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             courseId = await db.Cursos.Select(c => c.Id).FirstAsync();
         }
-        var email = $"novo-coordenador-{Guid.NewGuid():N}@ifpe.edu.br";
+        var email = $"novo-coordenador-{Guid.NewGuid():N}@{dominio}";
         var admin = await factory.CreateAdminClientAsync();
         (await admin.PostAsJsonAsync("/api/usuarios/coordenador", new
         {

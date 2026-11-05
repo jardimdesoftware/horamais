@@ -19,7 +19,9 @@ public class UserAdministrationService(ApplicationDbContext db, UserManager<Iden
 {
     public static bool IsInstitutional(string email) =>
         email.EndsWith("@ifpe.edu.br", StringComparison.OrdinalIgnoreCase) ||
-        email.EndsWith("@discente.ifpe.edu.br", StringComparison.OrdinalIgnoreCase);
+        email.EndsWith("@discente.ifpe.edu.br", StringComparison.OrdinalIgnoreCase) ||
+        email.EndsWith("@docente.ifpe.edu.br", StringComparison.OrdinalIgnoreCase) ||
+        email.EndsWith("@belojardim.ifpe.edu.br", StringComparison.OrdinalIgnoreCase);
 
     public static void EnsureSuccess(IdentityResult result)
     {

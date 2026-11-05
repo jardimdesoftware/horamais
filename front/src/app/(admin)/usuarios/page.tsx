@@ -36,6 +36,9 @@ import { ChevronDown, Plus, Search, UserRoundCog, Users } from 'lucide-react';
 
 type Change = { user: ManagedUser; kind: 'status' | 'role' };
 
+const institutionalEmailPattern =
+  /@(discente\.|docente\.|belojardim\.)?ifpe\.edu\.br$/i;
+
 export default function UsuariosPage() {
   const { data: session } = useSession();
   const [search, setSearch] = useState('');
@@ -311,9 +314,7 @@ export default function UsuariosPage() {
                               disabled={
                                 !user.ativo ||
                                 !user.emailVerificado ||
-                                !/@(discente\.)?ifpe\.edu\.br$/i.test(
-                                  user.email
-                                )
+                                !institutionalEmailPattern.test(user.email)
                               }
                               onSelect={() => openCoordinator(user)}
                             >
@@ -328,9 +329,7 @@ export default function UsuariosPage() {
                               user.cargo !== 'ADMIN' &&
                               (!user.ativo ||
                                 !user.emailVerificado ||
-                                !/@(discente\.)?ifpe\.edu\.br$/i.test(
-                                  user.email
-                                ))
+                                !institutionalEmailPattern.test(user.email))
                             }
                             onSelect={() => openChange(user, 'role')}
                           >
@@ -550,9 +549,7 @@ export default function UsuariosPage() {
               disabled={
                 saving ||
                 (newCoordinator &&
-                  !/@(discente\.)?ifpe\.edu\.br$/i.test(
-                    coordinatorEmail.trim()
-                  )) ||
+                  !institutionalEmailPattern.test(coordinatorEmail.trim())) ||
                 !courseId ||
                 !coordinatorName.trim() ||
                 !ordinance.trim() ||

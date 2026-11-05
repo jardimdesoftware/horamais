@@ -56,6 +56,12 @@ para o histórico completo. O procedimento de atualização está em
   e endpoints legados de senha e convite deixam de atender no ambiente normal
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 
+### Correções
+
+- **Backend e frontend:** coordenadores com e-mail `@docente.ifpe.edu.br` ou
+  `@belojardim.ifpe.edu.br` podem ser cadastrados no painel e entrar com Google
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
+
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
 
 ### Segurança

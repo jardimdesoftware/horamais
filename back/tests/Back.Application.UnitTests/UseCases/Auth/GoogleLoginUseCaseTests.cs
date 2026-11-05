@@ -54,6 +54,8 @@ public class GoogleLoginUseCaseTests
     [Theory]
     [InlineData("aluno@gmail.com")]
     [InlineData("aluno@ifpe.edu.br")]
+    [InlineData("professor@docente.ifpe.edu.br")]
+    [InlineData("professor@belojardim.ifpe.edu.br")]
     [InlineData("aluno@sub.discente.ifpe.edu.br")]
     [InlineData("aluno@discente.ifpe.edu.br.evil.com")]
     [InlineData("aluno@evil.com@discente.ifpe.edu.br")]
