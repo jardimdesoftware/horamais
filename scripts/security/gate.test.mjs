@@ -39,6 +39,16 @@ test('Published summaries omit source, evidence, headers and tokens', () => {
   assert.ok(!JSON.stringify(result).includes('secret'));
 });
 
+test('DAST identifies a blocking library without publishing the raw alert', () => {
+  const result = evaluateZap([{
+    pluginId: '10003', risk: 'High', url: 'http://backend:5000/swagger/asset.js?token=secret',
+    other: 'The identified library example.js, version 1.2.3 is vulnerable.\nsecret',
+  }]);
+  assert.deepEqual(result.findings, [{
+    rule: '10003', risk: 3, blocking: true, library: 'example.js', version: '1.2.3', target: 'backend:5000',
+  }]);
+});
+
 test('CLI returns failing status for high/critical findings and corrupt/missing reports', () => {
   const directory = mkdtempSync(join(tmpdir(), 'horamais-security-'));
   try {

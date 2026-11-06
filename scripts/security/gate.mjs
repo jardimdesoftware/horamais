@@ -34,7 +34,17 @@ export function evaluateZap(alerts) {
     const mapping = { Informational: 0, Low: 1, Medium: 2, High: 3, '0': 0, '1': 1, '2': 2, '3': 3 };
     if (!(risk in mapping)) throw new Error('Unknown ZAP severity');
     // Do not retain request bodies, evidence, query strings, cookies or tokens.
-    return { rule: alert.pluginId ?? alert.pluginid, risk: mapping[risk], blocking: mapping[risk] >= 3 };
+    const finding = { rule: alert.pluginId ?? alert.pluginid, risk: mapping[risk], blocking: mapping[risk] >= 3 };
+    if (finding.blocking && String(finding.rule) === '10003') {
+      const library = /^The identified library ([\w.-]{1,64}), version (\d[\w.+-]{0,31}) is vulnerable\./.exec(alert.other ?? '');
+      const target = /^http:\/\/(backend:5000|frontend:3000)\//.exec(alert.url ?? '');
+      if (library) {
+        finding.library = library[1];
+        finding.version = library[2];
+      }
+      if (target) finding.target = target[1];
+    }
+    return finding;
   });
   return { scanner: 'zap', findings, blocked: findings.some(f => f.blocking) };
 }
