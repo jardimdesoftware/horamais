@@ -14,6 +14,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Frontend:** Next.js, Zod e `follow-redirects` atualizados para versões
+  corrigidas após os alertas de segurança na validação do deploy
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
   de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
