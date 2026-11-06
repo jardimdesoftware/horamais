@@ -17,8 +17,8 @@ para o histórico completo. O procedimento de atualização está em
 - **Frontend:** Next.js, Zod e `follow-redirects` atualizados para versões
   corrigidas após os alertas de segurança na validação do deploy
   ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
-- **Backend:** Swagger UI atualizado para corrigir o alerta de segurança no
-  JavaScript da documentação da API
+- **Backend:** interface interativa do Swagger restrita ao desenvolvimento.
+  O esquema OpenAPI continua disponível em produção
   ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
