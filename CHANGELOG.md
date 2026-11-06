@@ -14,6 +14,12 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
+- **Frontend:** Next.js, Zod e `follow-redirects` atualizados para versões
+  corrigidas após os alertas de segurança na validação do deploy
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
+- **Backend:** interface interativa do Swagger restrita ao desenvolvimento.
+  O esquema OpenAPI continua disponível em produção
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
   de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
@@ -55,6 +61,12 @@ para o histórico completo. O procedimento de atualização está em
 - **Backend e frontend:** entrada somente com Google institucional; formulários
   e endpoints legados de senha e convite deixam de atender no ambiente normal
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
+
+### Correções
+
+- **Backend e frontend:** coordenadores com e-mail `@docente.ifpe.edu.br` ou
+  `@belojardim.ifpe.edu.br` podem ser cadastrados no painel e entrar com Google
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
 
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
 

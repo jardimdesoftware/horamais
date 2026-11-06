@@ -195,9 +195,9 @@ app.UseRouting();
 app.UseCors(CorsConfig.PolicyName);
 app.UseRateLimiter();
 app.UseSwagger();
-app.UseSwaggerUI();
-
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+    app.UseSwaggerUI();
+else
     app.UseHttpsRedirection();
 
 app.UseAuthentication();

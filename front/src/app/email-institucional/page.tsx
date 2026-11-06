@@ -46,11 +46,13 @@ export default function EmailInstitucionalPage() {
             Vamos usar seu e-mail institucional?
           </h1>
           <p className="text-gray-700 leading-relaxed">
-            A conta Google escolhida não é um e-mail de discente do IFPE. Para
-            começar seu cadastro, entre com sua conta institucional.
+            Entre com sua conta Google institucional do IFPE. Para acessar como
+            coordenador, peça a um administrador para cadastrar seu e-mail.
           </p>
           <div className="my-6 rounded-xl bg-blue-50 px-4 py-5 text-blue-900">
-            <p className="text-sm mb-1">Seu e-mail deve terminar com</p>
+            <p className="text-sm mb-1">
+              Para se cadastrar como aluno, use um e-mail que termina com
+            </p>
             <p className="font-semibold break-words">@discente.ifpe.edu.br</p>
           </div>
           <Button
