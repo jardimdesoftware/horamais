@@ -11,6 +11,10 @@ O frontend usa `PORT_MACHINE_FRONTEND=127.0.0.1:3000`. O backend usa
 Garage ficam na rede privada do Compose. No firewall da VM e na rede Oracle,
 mantenha o ingresso web nas portas 80 e 443 e restrinja SSH às origens autorizadas.
 
+Ao atualizar uma instalação antiga, troque `PORT_MACHINE_BACKEND=127.0.0.1:5000`
+por `PORT_MACHINE_BACKEND=5000` no `.env` antes de rodar o deploy. O Compose
+aplica o endereço de loopback ao publicar a porta.
+
 Configure as URLs públicas no `.env` da VM e registre
 `https://horamais.me/api/auth/callback/google` no cliente OAuth do Google.
 

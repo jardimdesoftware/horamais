@@ -14,12 +14,6 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Segurança
 
-- **Frontend:** Next.js, Zod e `follow-redirects` atualizados para versões
-  corrigidas após os alertas de segurança na validação do deploy
-  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
-- **Backend:** interface interativa do Swagger restrita ao desenvolvimento.
-  O esquema OpenAPI continua disponível em produção
-  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
 - **Backend:** `System.Security.Cryptography.Xml` atualizado para 10.0.13,
   corrigindo os achados altos do Trivy durante a validação da administração
   de usuários ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
@@ -62,13 +56,29 @@ para o histórico completo. O procedimento de atualização está em
   e endpoints legados de senha e convite deixam de atender no ambiente normal
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 
+## [1.0.17](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.17) — 2026-11-07
+
 ### Correções
 
 - **Infraestrutura:** o proxy de produção alcança os hubs SignalR pela porta
   local do backend, restabelecendo as notificações em tempo real
   ([#480](https://github.com/jardimdesoftware/horamais/issues/480)).
+
+## [1.0.16](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.16) — 2026-11-06
+
+### Correções
+
 - **Backend e frontend:** coordenadores com e-mail `@docente.ifpe.edu.br` ou
   `@belojardim.ifpe.edu.br` podem ser cadastrados no painel e entrar com Google
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
+
+### Segurança
+
+- **Frontend:** Next.js, Zod e `follow-redirects` atualizados para versões
+  corrigidas após os alertas de segurança na validação do deploy
+  ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
+- **Backend:** interface interativa do Swagger restrita ao desenvolvimento.
+  O esquema OpenAPI continua disponível em produção
   ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).
 
 ## [1.0.7](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.7) — 2026-10-06
