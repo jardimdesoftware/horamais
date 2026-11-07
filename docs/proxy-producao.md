@@ -6,7 +6,7 @@ Nginx encaminha `/hubs/` diretamente ao backend para permitir WebSocket.
 
 ## Portas e configuração
 
-O frontend usa `PORT_MACHINE_FRONTEND=3000`. O backend usa
+O frontend usa `PORT_MACHINE_FRONTEND=127.0.0.1:3000`. O backend usa
 `PORT_MACHINE_BACKEND=5000` com bind exclusivo em `127.0.0.1`. PostgreSQL e
 Garage ficam na rede privada do Compose. No firewall da VM e na rede Oracle,
 mantenha o ingresso web nas portas 80 e 443 e restrinja SSH às origens autorizadas.
@@ -33,7 +33,7 @@ map $http_upgrade $horamais_connection_upgrade {
 ```
 
 ```nginx
-client_max_body_size 6m;
+client_max_body_size 20m;
 
 location /hubs/ {
     proxy_pass http://127.0.0.1:5000;
