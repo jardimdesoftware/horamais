@@ -64,6 +64,9 @@ para o histórico completo. O procedimento de atualização está em
 
 ### Correções
 
+- **Infraestrutura:** o proxy de produção alcança os hubs SignalR pela porta
+  local do backend, restabelecendo as notificações em tempo real
+  ([#480](https://github.com/jardimdesoftware/horamais/issues/480)).
 - **Backend e frontend:** coordenadores com e-mail `@docente.ifpe.edu.br` ou
   `@belojardim.ifpe.edu.br` podem ser cadastrados no painel e entrar com Google
   ([#523](https://github.com/jardimdesoftware/horamais/issues/523)).

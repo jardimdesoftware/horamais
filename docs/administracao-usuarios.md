@@ -7,7 +7,8 @@ INITIAL_ADMIN_EMAIL=mlcr1@discente.ifpe.edu.br
 ```
 
 Recrie o container do backend para carregar a variável. O e-mail completo deve
-pertencer a `ifpe.edu.br` ou `discente.ifpe.edu.br`. A variável não concede
+pertencer a `ifpe.edu.br`, `discente.ifpe.edu.br`, `docente.ifpe.edu.br` ou
+`belojardim.ifpe.edu.br`. A variável não concede
 acesso sem autenticação: a ativação ocorre no primeiro login Google desse
 endereço, após validar assinatura, audiência e confirmação do e-mail.
 Não é necessário cadastrar senha nem preencher cadastro de aluno para essa
