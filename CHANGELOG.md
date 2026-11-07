@@ -56,6 +56,14 @@ para o histórico completo. O procedimento de atualização está em
   e endpoints legados de senha e convite deixam de atender no ambiente normal
   ([#504](https://github.com/jardimdesoftware/horamais/issues/504)).
 
+## [1.0.17](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.17) — 2026-11-07
+
+### Correções
+
+- **Infraestrutura:** o proxy de produção alcança os hubs SignalR pela porta
+  local do backend, restabelecendo as notificações em tempo real
+  ([#480](https://github.com/jardimdesoftware/horamais/issues/480)).
+
 ## [1.0.16](https://github.com/jardimdesoftware/horamais/releases/tag/1.0.16) — 2026-11-06
 
 ### Correções
